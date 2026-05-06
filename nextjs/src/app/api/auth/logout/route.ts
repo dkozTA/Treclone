@@ -4,7 +4,6 @@ import { successResponse, errorResponse } from '@/lib/api-utils'
 export async function POST(request: NextRequest) {
   try {
     // In production, verify the token and invalidate it
-    // For now, just confirm logout
     return successResponse({
       message: 'Logged out successfully',
     })

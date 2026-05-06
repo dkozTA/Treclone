@@ -2,10 +2,7 @@ import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
 import { registerSchema } from '@/lib/validation'
 import { successResponse, errorResponse } from '@/lib/api-utils'
-
-// Note: For production, use bcryptjs or similar for password hashing
-// npm install bcryptjs @types/bcryptjs
-// import bcrypt from 'bcryptjs'
+import bcrypt from 'bcryptjs'
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,10 +20,8 @@ export async function POST(request: NextRequest) {
       return errorResponse('Email already in use', 409)
     }
 
-    // In production, hash the password:
-    // const hashedPassword = await bcrypt.hash(validatedData.password, 10)
-    // For now, we'll store plain password (NOT SECURE - for testing only)
-    const passwordHash = validatedData.password // TODO: Hash this in production
+    // Hash the password
+    const passwordHash = await bcrypt.hash(validatedData.password, 10)
 
     // Create new user
     const user = await prisma.user.create({
