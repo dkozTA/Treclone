@@ -40,7 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 
-# generated files
+# generated file
 app/generated
 
 # storybook
@@ -53,3 +53,4 @@ src/stories/
 design/
 
 folder-structure.txt
+file-organization.txt
