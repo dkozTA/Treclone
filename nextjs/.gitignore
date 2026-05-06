@@ -43,5 +43,11 @@ yarn-error.log*
 # generated files
 app/generated
 
+# storybook
 *storybook.log
 storybook-static
+.storybook/
+src/stories/
+
+# design
+design/

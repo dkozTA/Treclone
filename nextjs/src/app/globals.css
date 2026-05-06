@@ -5,7 +5,12 @@
 
 @layer base {
   :root {
-    /* Surface Hierarchy */
+    /* Design System - Canvas & Surface Hierarchy (Tonal Layering) */
+    --canvas: #f7f9fb;                              /* Level 0: The Floor */
+    --surface-1: #f0f4f7;                           /* Level 1: The Columns */
+    --surface-2: #ffffff;                           /* Level 2: The Cards */
+    --surface-glass: rgba(255, 255, 255, 0.8);     /* Glass effect for floating elements */
+    
     --background: #f7f9fb;
     --surface-bright: #ffffff;
     --surface-container-lowest: #ffffff;
@@ -14,10 +19,12 @@
     --surface-container-high: #e1e9ee;
     --surface-dim: #d9e1e7;
 
-    /* Text & Foreground */
-    --foreground: #2a3439;
+    /* Text & Ink */
+    --foreground: #2a3439;                          /* ink: Main text, soft dark */
+    --ink: #2a3439;
+    --ink-muted: #687783;                           /* Muted text for metadata */
     --on-surface: #2a3439;
-    --on-surface-variant: #4d5962;
+    --on-surface-variant: #687783;
 
     /* Card Defaults */
     --card: #ffffff;
@@ -27,11 +34,12 @@
     --popover: #ffffff;
     --popover-foreground: #2a3439;
 
-    /* Primary - Dark Gray (for sidebars, secondary elements) */
-    --primary: #214009;
+    /* Primary & Accents (Blue Gradient) */
+    --primary: #0053dc;                             /* Primary: Gradient start */
     --primary-foreground: #ffffff;
-    --primary-container: #a8dfa8;
-    --on-primary-container: #000d00;
+    --primary-container: #3e76fe;                   /* Primary: Gradient end */
+    --on-primary-container: #ffffff;
+    --on-primary: #ffffff;
 
     /* Tertiary - Blue (main action buttons) */
     --tertiary: #0053dc;
@@ -52,6 +60,17 @@
     /* Accent */
     --accent: #3e76fe;
     --accent-foreground: #ffffff;
+
+    /* Semantic Status Chips (from Design System) */
+    --semantic-blocked-bg: #ffe0e0;
+    --semantic-blocked-text: #d32f2f;
+    --semantic-progress-bg: #d0e1ff;
+    --semantic-progress-text: #0053dc;
+    --semantic-done-bg: #d4f5d6;
+    --semantic-done-text: #27a644;
+    
+    /* Hairline Ghost Border (20% opacity) */
+    --hairline-ghost: rgba(42, 52, 57, 0.2);
 
     /* Status Colors */
     --error-container: #f9dedc;
@@ -171,10 +190,115 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-canvas text-ink;
   }
 
   html {
     @apply font-sans;
+  }
+}
+
+@layer components {
+  /* Kanban Board - Level 0 (Canvas) */
+  .kanban-board {
+    @apply bg-canvas p-gap-xl;
+  }
+
+  /* Kanban Column - Level 1 (Surface Container) */
+  .kanban-column {
+    @apply bg-surface-1 rounded-md p-gap-md;
+    /* NO BORDER - using tonal layering instead */
+    @apply text-headline-sm font-heading font-semibold;
+  }
+
+  /* Kanban Card - Level 2 (Surface) */
+  .kanban-card {
+    @apply bg-surface-2 rounded-sm p-gap-md;
+    @apply text-body text-ink;
+    /* NO BORDER, NO SHADOW - tonal stacking only */
+  }
+
+  /* Kanban Card Dragging State - Glassmorphism */
+  .kanban-card-dragging {
+    @apply bg-surface-glass backdrop-blur-md;
+    @apply shadow-md;
+  }
+
+  /* Status Chip - Semantic Status */
+  .status-chip {
+    @apply rounded-full px-3 py-1;
+    @apply text-label-sm font-semibold;
+  }
+
+  .status-chip-blocked {
+    @apply bg-semantic-blocked-bg text-semantic-blocked-text;
+  }
+
+  .status-chip-progress {
+    @apply bg-semantic-progress-bg text-semantic-progress-text;
+  }
+
+  .status-chip-done {
+    @apply bg-semantic-done-bg text-semantic-done-text;
+  }
+
+  /* Primary Button - Blue Gradient */
+  .btn-primary {
+    @apply bg-gradient-to-br from-primary to-primary-container text-on-primary;
+    @apply rounded-sm px-4 py-2.5;
+    @apply text-sm font-semibold uppercase tracking-wider;
+    @apply transition-all;
+  }
+
+  /* Text Input Focused State - Hairline Ghost Border */
+  input:focus {
+    @apply border border-hairline-ghost;
+    @apply bg-surface-2;
+  }
+
+  /* Card Spacing Convention */
+  .card-title {
+    @apply text-title-md font-semibold text-ink mb-gap-sm;
+  }
+
+  .card-body {
+    @apply text-body text-ink-muted;
+  }
+
+  .card-meta {
+    @apply text-label-sm text-ink-muted mt-gap-sm;
+  }
+
+  /* NO-LINE Pattern - Remove borders for design consistency */
+  .no-border {
+    @apply border-0 shadow-none;
+  }
+
+  /* Tonal Hierarchy - Depth without borders */
+  .surface-level-0 {
+    @apply bg-canvas;
+  }
+
+  .surface-level-1 {
+    @apply bg-surface-1;
+  }
+
+  .surface-level-2 {
+    @apply bg-surface-2;
+  }
+
+  /* Glass effect helper */
+  .glass {
+    @apply bg-surface-glass backdrop-blur-md;
+  }
+
+  /* Button base styles */
+  button, [role="button"] {
+    @apply transition-all;
+  }
+
+  /* Remove default input borders */
+  input, textarea, select {
+    @apply border-0 bg-surface-2 focus:border-hairline-ghost focus:border;
   }
 }
