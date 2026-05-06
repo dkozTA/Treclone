@@ -1,6 +1,6 @@
 ---
 version: 1.0
-name: Trello Clone
+name: Treclone
 description: "Hệ thống thiết kế cho ứng dụng quản lý Kanban cao cấp. Thay vì dùng các đường viền cứng nhắc, hệ thống tạo ranh giới bằng sự chuyển đổi màu nền (Tonal Layering). Giao diện sử dụng tone màu Warm Neutral sáng, font Manrope cho tiêu đề để tạo tính hiện đại và font Inter cho nội dung để đảm bảo độ dễ đọc. Các thành phần tương tác nổi (floating) sử dụng Glassmorphism mờ ảo thay vì shadow nặng nề."
 
 colors:

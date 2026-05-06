@@ -10,7 +10,7 @@ import { ModalProvider } from "@/components/providers/modal-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Trello Clone",
+  title: "Treclone",
   description: "Manage your tasks efficiently.",
 };
 
