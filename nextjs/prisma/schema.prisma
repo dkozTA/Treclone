@@ -39,6 +39,7 @@ model Board {
     owner User   @relation("BoardOwner", fields: [ownerId], references: [id], onDelete: Cascade)
     lists List[]
 
+    @@index([ownerId])
     @@map("boards")
 }
 
@@ -54,6 +55,7 @@ model List {
     cards Card[]
 
     @@unique([boardId, position])
+    @@index([boardId])
     @@map("lists")
 }
 
@@ -70,9 +72,12 @@ model Card {
 
     list     List  @relation(fields: [listId], references: [id], onDelete: Cascade)
     assignee User? @relation("CardAssignee", fields: [assigneeUserId], references: [id], onDelete: SetNull)
-    creator  User  @relation("CardCreator", fields: [createdBy], references: [id])
+    creator  User  @relation("CardCreator", fields: [createdBy], references: [id], onDelete: Restrict)
 
     @@unique([listId, position])
+    @@index([listId])
+    @@index([assigneeUserId])
+    @@index([createdBy])
     @@map("cards")
 }
 
@@ -86,5 +91,6 @@ model RefreshToken {
 
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+    @@index([userId])
     @@map("refresh_tokens")
 }
