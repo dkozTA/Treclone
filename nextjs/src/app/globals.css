@@ -1,10 +1,7 @@
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -189,7 +186,7 @@
   }
 
   * {
-    @apply outline-ring/50;
+    @apply border-border;
   }
 
   body {
