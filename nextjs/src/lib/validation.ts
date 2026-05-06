@@ -67,3 +67,17 @@ export type UpdateListInput = z.infer<typeof updateListSchema>
 export type CreateCardInput = z.infer<typeof createCardSchema>
 export type UpdateCardInput = z.infer<typeof updateCardSchema>
 export type MoveCardInput = z.infer<typeof moveCardSchema>
+
+// Forgot password and reset password schemas
+export const resetPasswordSchema = z
+  .object({
+    token: z.string().min(1, 'Token is required'),
+    password: z
+      .string()
+      .min(8, 'Password must be at least 8 characters long'),
+    passwordConfirmation: z.string(),
+  })
+  .refine(data => data.password === data.passwordConfirmation, {
+    message: "Passwords don't match",
+    path: ['passwordConfirmation'], // Point error to the confirmation field
+  })

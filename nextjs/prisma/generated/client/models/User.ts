@@ -41,6 +41,8 @@ export type UserMinAggregateOutputType = {
   fullName: string | null
   createdAt: Date | null
   updatedAt: Date | null
+  passwordResetToken: string | null
+  passwordResetExpires: Date | null
 }
 
 export type UserMaxAggregateOutputType = {
@@ -50,6 +52,8 @@ export type UserMaxAggregateOutputType = {
   fullName: string | null
   createdAt: Date | null
   updatedAt: Date | null
+  passwordResetToken: string | null
+  passwordResetExpires: Date | null
 }
 
 export type UserCountAggregateOutputType = {
@@ -59,6 +63,8 @@ export type UserCountAggregateOutputType = {
   fullName: number
   createdAt: number
   updatedAt: number
+  passwordResetToken: number
+  passwordResetExpires: number
   _all: number
 }
 
@@ -78,6 +84,8 @@ export type UserMinAggregateInputType = {
   fullName?: true
   createdAt?: true
   updatedAt?: true
+  passwordResetToken?: true
+  passwordResetExpires?: true
 }
 
 export type UserMaxAggregateInputType = {
@@ -87,6 +95,8 @@ export type UserMaxAggregateInputType = {
   fullName?: true
   createdAt?: true
   updatedAt?: true
+  passwordResetToken?: true
+  passwordResetExpires?: true
 }
 
 export type UserCountAggregateInputType = {
@@ -96,6 +106,8 @@ export type UserCountAggregateInputType = {
   fullName?: true
   createdAt?: true
   updatedAt?: true
+  passwordResetToken?: true
+  passwordResetExpires?: true
   _all?: true
 }
 
@@ -192,6 +204,8 @@ export type UserGroupByOutputType = {
   fullName: string
   createdAt: Date
   updatedAt: Date
+  passwordResetToken: string | null
+  passwordResetExpires: Date | null
   _count: UserCountAggregateOutputType | null
   _avg: UserAvgAggregateOutputType | null
   _sum: UserSumAggregateOutputType | null
@@ -224,6 +238,8 @@ export type UserWhereInput = {
   fullName?: Prisma.StringFilter<"User"> | string
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  passwordResetToken?: Prisma.StringNullableFilter<"User"> | string | null
+  passwordResetExpires?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   ownedBoards?: Prisma.BoardListRelationFilter
   assignedCards?: Prisma.CardListRelationFilter
   createdCards?: Prisma.CardListRelationFilter
@@ -237,6 +253,8 @@ export type UserOrderByWithRelationInput = {
   fullName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  passwordResetToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  passwordResetExpires?: Prisma.SortOrderInput | Prisma.SortOrder
   ownedBoards?: Prisma.BoardOrderByRelationAggregateInput
   assignedCards?: Prisma.CardOrderByRelationAggregateInput
   createdCards?: Prisma.CardOrderByRelationAggregateInput
@@ -246,6 +264,7 @@ export type UserOrderByWithRelationInput = {
 export type UserWhereUniqueInput = Prisma.AtLeast<{
   id?: bigint | number
   email?: string
+  passwordResetToken?: string
   AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   OR?: Prisma.UserWhereInput[]
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
@@ -253,11 +272,12 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   fullName?: Prisma.StringFilter<"User"> | string
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  passwordResetExpires?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   ownedBoards?: Prisma.BoardListRelationFilter
   assignedCards?: Prisma.CardListRelationFilter
   createdCards?: Prisma.CardListRelationFilter
   refreshTokens?: Prisma.RefreshTokenListRelationFilter
-}, "id" | "email">
+}, "id" | "email" | "passwordResetToken">
 
 export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -266,6 +286,8 @@ export type UserOrderByWithAggregationInput = {
   fullName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  passwordResetToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  passwordResetExpires?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _avg?: Prisma.UserAvgOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
@@ -283,6 +305,8 @@ export type UserScalarWhereWithAggregatesInput = {
   fullName?: Prisma.StringWithAggregatesFilter<"User"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
+  passwordResetToken?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  passwordResetExpires?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
 }
 
 export type UserCreateInput = {
@@ -292,6 +316,8 @@ export type UserCreateInput = {
   fullName: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  passwordResetToken?: string | null
+  passwordResetExpires?: Date | string | null
   ownedBoards?: Prisma.BoardCreateNestedManyWithoutOwnerInput
   assignedCards?: Prisma.CardCreateNestedManyWithoutAssigneeInput
   createdCards?: Prisma.CardCreateNestedManyWithoutCreatorInput
@@ -305,6 +331,8 @@ export type UserUncheckedCreateInput = {
   fullName: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  passwordResetToken?: string | null
+  passwordResetExpires?: Date | string | null
   ownedBoards?: Prisma.BoardUncheckedCreateNestedManyWithoutOwnerInput
   assignedCards?: Prisma.CardUncheckedCreateNestedManyWithoutAssigneeInput
   createdCards?: Prisma.CardUncheckedCreateNestedManyWithoutCreatorInput
@@ -318,6 +346,8 @@ export type UserUpdateInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ownedBoards?: Prisma.BoardUpdateManyWithoutOwnerNestedInput
   assignedCards?: Prisma.CardUpdateManyWithoutAssigneeNestedInput
   createdCards?: Prisma.CardUpdateManyWithoutCreatorNestedInput
@@ -331,6 +361,8 @@ export type UserUncheckedUpdateInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ownedBoards?: Prisma.BoardUncheckedUpdateManyWithoutOwnerNestedInput
   assignedCards?: Prisma.CardUncheckedUpdateManyWithoutAssigneeNestedInput
   createdCards?: Prisma.CardUncheckedUpdateManyWithoutCreatorNestedInput
@@ -344,6 +376,8 @@ export type UserCreateManyInput = {
   fullName: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  passwordResetToken?: string | null
+  passwordResetExpires?: Date | string | null
 }
 
 export type UserUpdateManyMutationInput = {
@@ -353,6 +387,8 @@ export type UserUpdateManyMutationInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UserUncheckedUpdateManyInput = {
@@ -362,6 +398,8 @@ export type UserUncheckedUpdateManyInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UserCountOrderByAggregateInput = {
@@ -371,6 +409,8 @@ export type UserCountOrderByAggregateInput = {
   fullName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  passwordResetToken?: Prisma.SortOrder
+  passwordResetExpires?: Prisma.SortOrder
 }
 
 export type UserAvgOrderByAggregateInput = {
@@ -384,6 +424,8 @@ export type UserMaxOrderByAggregateInput = {
   fullName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  passwordResetToken?: Prisma.SortOrder
+  passwordResetExpires?: Prisma.SortOrder
 }
 
 export type UserMinOrderByAggregateInput = {
@@ -393,6 +435,8 @@ export type UserMinOrderByAggregateInput = {
   fullName?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  passwordResetToken?: Prisma.SortOrder
+  passwordResetExpires?: Prisma.SortOrder
 }
 
 export type UserSumOrderByAggregateInput = {
@@ -423,6 +467,14 @@ export type StringFieldUpdateOperationsInput = {
 
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
 }
 
 export type UserCreateNestedOneWithoutOwnedBoardsInput = {
@@ -490,6 +542,8 @@ export type UserCreateWithoutOwnedBoardsInput = {
   fullName: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  passwordResetToken?: string | null
+  passwordResetExpires?: Date | string | null
   assignedCards?: Prisma.CardCreateNestedManyWithoutAssigneeInput
   createdCards?: Prisma.CardCreateNestedManyWithoutCreatorInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -502,6 +556,8 @@ export type UserUncheckedCreateWithoutOwnedBoardsInput = {
   fullName: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  passwordResetToken?: string | null
+  passwordResetExpires?: Date | string | null
   assignedCards?: Prisma.CardUncheckedCreateNestedManyWithoutAssigneeInput
   createdCards?: Prisma.CardUncheckedCreateNestedManyWithoutCreatorInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -530,6 +586,8 @@ export type UserUpdateWithoutOwnedBoardsInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedCards?: Prisma.CardUpdateManyWithoutAssigneeNestedInput
   createdCards?: Prisma.CardUpdateManyWithoutCreatorNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -542,6 +600,8 @@ export type UserUncheckedUpdateWithoutOwnedBoardsInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   assignedCards?: Prisma.CardUncheckedUpdateManyWithoutAssigneeNestedInput
   createdCards?: Prisma.CardUncheckedUpdateManyWithoutCreatorNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -554,6 +614,8 @@ export type UserCreateWithoutAssignedCardsInput = {
   fullName: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  passwordResetToken?: string | null
+  passwordResetExpires?: Date | string | null
   ownedBoards?: Prisma.BoardCreateNestedManyWithoutOwnerInput
   createdCards?: Prisma.CardCreateNestedManyWithoutCreatorInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -566,6 +628,8 @@ export type UserUncheckedCreateWithoutAssignedCardsInput = {
   fullName: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  passwordResetToken?: string | null
+  passwordResetExpires?: Date | string | null
   ownedBoards?: Prisma.BoardUncheckedCreateNestedManyWithoutOwnerInput
   createdCards?: Prisma.CardUncheckedCreateNestedManyWithoutCreatorInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -583,6 +647,8 @@ export type UserCreateWithoutCreatedCardsInput = {
   fullName: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  passwordResetToken?: string | null
+  passwordResetExpires?: Date | string | null
   ownedBoards?: Prisma.BoardCreateNestedManyWithoutOwnerInput
   assignedCards?: Prisma.CardCreateNestedManyWithoutAssigneeInput
   refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUserInput
@@ -595,6 +661,8 @@ export type UserUncheckedCreateWithoutCreatedCardsInput = {
   fullName: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  passwordResetToken?: string | null
+  passwordResetExpires?: Date | string | null
   ownedBoards?: Prisma.BoardUncheckedCreateNestedManyWithoutOwnerInput
   assignedCards?: Prisma.CardUncheckedCreateNestedManyWithoutAssigneeInput
   refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -623,6 +691,8 @@ export type UserUpdateWithoutAssignedCardsInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ownedBoards?: Prisma.BoardUpdateManyWithoutOwnerNestedInput
   createdCards?: Prisma.CardUpdateManyWithoutCreatorNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -635,6 +705,8 @@ export type UserUncheckedUpdateWithoutAssignedCardsInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ownedBoards?: Prisma.BoardUncheckedUpdateManyWithoutOwnerNestedInput
   createdCards?: Prisma.CardUncheckedUpdateManyWithoutCreatorNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -658,6 +730,8 @@ export type UserUpdateWithoutCreatedCardsInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ownedBoards?: Prisma.BoardUpdateManyWithoutOwnerNestedInput
   assignedCards?: Prisma.CardUpdateManyWithoutAssigneeNestedInput
   refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUserNestedInput
@@ -670,6 +744,8 @@ export type UserUncheckedUpdateWithoutCreatedCardsInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ownedBoards?: Prisma.BoardUncheckedUpdateManyWithoutOwnerNestedInput
   assignedCards?: Prisma.CardUncheckedUpdateManyWithoutAssigneeNestedInput
   refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -682,6 +758,8 @@ export type UserCreateWithoutRefreshTokensInput = {
   fullName: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  passwordResetToken?: string | null
+  passwordResetExpires?: Date | string | null
   ownedBoards?: Prisma.BoardCreateNestedManyWithoutOwnerInput
   assignedCards?: Prisma.CardCreateNestedManyWithoutAssigneeInput
   createdCards?: Prisma.CardCreateNestedManyWithoutCreatorInput
@@ -694,6 +772,8 @@ export type UserUncheckedCreateWithoutRefreshTokensInput = {
   fullName: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  passwordResetToken?: string | null
+  passwordResetExpires?: Date | string | null
   ownedBoards?: Prisma.BoardUncheckedCreateNestedManyWithoutOwnerInput
   assignedCards?: Prisma.CardUncheckedCreateNestedManyWithoutAssigneeInput
   createdCards?: Prisma.CardUncheckedCreateNestedManyWithoutCreatorInput
@@ -722,6 +802,8 @@ export type UserUpdateWithoutRefreshTokensInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ownedBoards?: Prisma.BoardUpdateManyWithoutOwnerNestedInput
   assignedCards?: Prisma.CardUpdateManyWithoutAssigneeNestedInput
   createdCards?: Prisma.CardUpdateManyWithoutCreatorNestedInput
@@ -734,6 +816,8 @@ export type UserUncheckedUpdateWithoutRefreshTokensInput = {
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordResetToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordResetExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ownedBoards?: Prisma.BoardUncheckedUpdateManyWithoutOwnerNestedInput
   assignedCards?: Prisma.CardUncheckedUpdateManyWithoutAssigneeNestedInput
   createdCards?: Prisma.CardUncheckedUpdateManyWithoutCreatorNestedInput
@@ -804,6 +888,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   fullName?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  passwordResetToken?: boolean
+  passwordResetExpires?: boolean
   ownedBoards?: boolean | Prisma.User$ownedBoardsArgs<ExtArgs>
   assignedCards?: boolean | Prisma.User$assignedCardsArgs<ExtArgs>
   createdCards?: boolean | Prisma.User$createdCardsArgs<ExtArgs>
@@ -818,6 +904,8 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   fullName?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  passwordResetToken?: boolean
+  passwordResetExpires?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -827,6 +915,8 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   fullName?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  passwordResetToken?: boolean
+  passwordResetExpires?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectScalar = {
@@ -836,9 +926,11 @@ export type UserSelectScalar = {
   fullName?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  passwordResetToken?: boolean
+  passwordResetExpires?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "fullName" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "fullName" | "createdAt" | "updatedAt" | "passwordResetToken" | "passwordResetExpires", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ownedBoards?: boolean | Prisma.User$ownedBoardsArgs<ExtArgs>
   assignedCards?: boolean | Prisma.User$assignedCardsArgs<ExtArgs>
@@ -864,6 +956,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     fullName: string
     createdAt: Date
     updatedAt: Date
+    passwordResetToken: string | null
+    passwordResetExpires: Date | null
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -1297,6 +1391,8 @@ export interface UserFieldRefs {
   readonly fullName: Prisma.FieldRef<"User", 'String'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly passwordResetToken: Prisma.FieldRef<"User", 'String'>
+  readonly passwordResetExpires: Prisma.FieldRef<"User", 'DateTime'>
 }
     
 
