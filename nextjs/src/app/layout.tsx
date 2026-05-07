@@ -20,14 +20,13 @@ export default function RootLayout({
   readonly children: React.ReactNode;
 }) {
   return (
-    // suppressHydrationWarning is required by next-themes
     <html lang="en" suppressHydrationWarning> 
       <body className={inter.className}>
         <QueryProvider>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
-            enableSystem
+            defaultTheme="light"
+            themes={["light", "dark"]}
             disableTransitionOnChange
           >
             {/* Global UI Overlays */}

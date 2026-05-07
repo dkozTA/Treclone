@@ -1,3 +1,4 @@
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import React from 'react';
 
 export default function MarketingLayout({
@@ -15,6 +16,7 @@ export default function MarketingLayout({
             <div className="flex gap-gap-md items-center">
               {/* Navigation links can go here */}
             </div>
+            <ThemeToggle />
           </nav>
         </div>
       </header>

@@ -3,7 +3,9 @@ import { render } from '@testing-library/react';
 import { Button } from '../button';
 
 describe('Button Component - CSS Loading Verification', () => {
-  it('should render button with design system classes', () => {
+// This test suite verifies that the Button component correctly applies the design system's CSS classes for styling, including gradients, border radius, and text color.
+// 
+it('should render button with design system classes', () => {
     const { container } = render(
       <Button variant="default" size="default">
         Test Button

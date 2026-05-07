@@ -6,7 +6,6 @@ import Link from 'next/link';
 export default async function MarketingHomePage() {
   const session = await getServerSession();
 
-  // Đã đăng nhập -> Đẩy thẳng vào app/dashboard
   if (session) {
     redirect('/boards');
   }
@@ -18,7 +17,7 @@ export default async function MarketingHomePage() {
       <section className="bg-surface-1 py-gap-xl px-gap-md">
         <div className="max-w-4xl mx-auto text-center space-y-gap-md">
           <h1 className="text-5xl font-heading font-bold text-ink leading-tight">
-            Trello mang tất cả nhiệm vụ lại với nhau
+            Treclone mang tất cả nhiệm vụ lại với nhau
           </h1>
           <p className="text-title-md text-ink-muted max-w-2xl mx-auto">
             Quản lý dự án, tổ chức công việc và cộng tác với đội ngũ của bạn một cách dễ dàng.

@@ -5,12 +5,12 @@
 
 @layer base {
   :root {
-    /* Design System - Canvas & Surface Hierarchy (Tonal Layering) */
-    --canvas: #f7f9fb;                              /* Level 0: The Floor */
-    --surface-1: #f0f4f7;                           /* Level 1: The Columns */
-    --surface-2: #ffffff;                           /* Level 2: The Cards */
-    --surface-glass: rgba(255, 255, 255, 0.8);     /* Glass effect for floating elements */
-    
+    /* Canvas & Surface Hierarchy (Tonal Layering) */
+    --canvas: #f7f9fb;
+    --surface-1: #f0f4f7;
+    --surface-2: #ffffff;
+    --surface-glass: rgba(255, 255, 255, 0.8);
+
     --background: #f7f9fb;
     --surface-bright: #ffffff;
     --surface-container-lowest: #ffffff;
@@ -20,9 +20,9 @@
     --surface-dim: #d9e1e7;
 
     /* Text & Ink */
-    --foreground: #2a3439;                          /* ink: Main text, soft dark */
+    --foreground: #2a3439;
     --ink: #2a3439;
-    --ink-muted: #687783;                           /* Muted text for metadata */
+    --ink-muted: #687783;
     --on-surface: #2a3439;
     --on-surface-variant: #687783;
 
@@ -35,9 +35,11 @@
     --popover-foreground: #2a3439;
 
     /* Primary & Accents (Blue Gradient) */
-    --primary: #0053dc;                             /* Primary: Gradient start */
+    --primary: #0053dc;
+    /* Primary: Gradient start */
     --primary-foreground: #ffffff;
-    --primary-container: #3e76fe;                   /* Primary: Gradient end */
+    --primary-container: #3e76fe;
+    /* Primary: Gradient end */
     --on-primary-container: #ffffff;
     --on-primary: #ffffff;
 
@@ -61,14 +63,14 @@
     --accent: #3e76fe;
     --accent-foreground: #ffffff;
 
-    /* Semantic Status Chips (from Design System) */
+    /* Semantic Status Chips */
     --semantic-blocked-bg: #ffe0e0;
     --semantic-blocked-text: #d32f2f;
     --semantic-progress-bg: #d0e1ff;
     --semantic-progress-text: #0053dc;
     --semantic-done-bg: #d4f5d6;
     --semantic-done-text: #27a644;
-    
+
     /* Hairline Ghost Border (20% opacity) */
     --hairline-ghost: rgba(42, 52, 57, 0.2);
 
@@ -86,7 +88,7 @@
     --outline-variant: #cad5e0;
     --ring: #0053dc;
 
-    /* Chart Colors (unchanged) */
+    /* Chart Colors */
     --chart-1: #0053dc;
     --chart-2: #4d5962;
     --chart-3: #2e7d32;
@@ -112,7 +114,11 @@
   }
 
   .dark {
-    /* Dark mode surface hierarchy */
+    /* Dark mode overrides */
+    --canvas: #0f1419;
+    --surface-1: #161b22;
+    --surface-2: #1d2228;
+    --surface-glass: rgba(15, 20, 25, 0.8);
     --background: #0f1419;
     --surface-bright: #3a434e;
     --surface-container-lowest: #0a0e13;
@@ -123,6 +129,8 @@
 
     /* Dark text */
     --foreground: #e1e8ef;
+    --ink: #e1e8ef;
+    --ink-muted: #aeb9c7;
     --on-surface: #e1e8ef;
     --on-surface-variant: #aeb9c7;
 
@@ -136,9 +144,10 @@
 
     /* Primary */
     --primary: #a8dfa8;
-    --primary-foreground: #003700;
+    --primary-foreground: #ffffff;
     --primary-container: #214009;
     --on-primary-container: #a8dfa8;
+    --on-primary: #ffffff;
 
     /* Tertiary */
     --tertiary: #b3d9ff;
@@ -160,6 +169,17 @@
     --accent: #b3d9ff;
     --accent-foreground: #001a41;
 
+    /* Semantic Status Chips */
+    --semantic-blocked-bg: #5d1f1f;
+    --semantic-blocked-text: #ffb3b3;
+    --semantic-progress-bg: #1a3a52;
+    --semantic-progress-text: #a8d5ff;
+    --semantic-done-bg: #1b4d2b;
+    --semantic-done-text: #81c784;
+
+    /* Hairline Ghost Border (20% opacity) */
+    --hairline-ghost: rgba(225, 232, 239, 0.2);
+
     /* Status */
     --error-container: #601410;
     --on-error-container: #f9dedc;
@@ -168,11 +188,21 @@
     --on-success-container: #c8e6c9;
     --success: #81c784;
 
-    /* Borders */
+    /* Borders & Input */
     --border: #282d33;
     --input: #282d33;
     --outline-variant: #474f59;
     --ring: #b3d9ff;
+
+    /* Chart Colors */
+    --chart-1: #a8d5ff;
+    --chart-2: #aeb9c7;
+    --chart-3: #81c784;
+    --chart-4: #ffb74d;
+    --chart-5: #ce93d8;
+
+    /* Radius */
+    --radius: 0.75rem;
 
     /* Sidebar dark */
     --sidebar: #0f1419;
@@ -293,12 +323,15 @@
   }
 
   /* Button base styles */
-  button, [role="button"] {
+  button,
+  [role='button'] {
     @apply transition-all;
   }
 
   /* Remove default input borders */
-  input, textarea, select {
+  input,
+  textarea,
+  select {
     @apply border-0 bg-surface-2 focus:border-hairline-ghost focus:border;
   }
 }

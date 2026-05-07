@@ -12,7 +12,7 @@ export default function DashboardLayout({
         {/* Logo/Brand */}
         <div className="flex items-center gap-gap-sm">
           <div className="w-8 h-8 bg-primary rounded-sm" />
-          <h2 className="text-headline-sm font-heading text-ink">Trello</h2>
+          <h2 className="text-headline-sm font-heading text-ink">Treclone</h2>
         </div>
 
         {/* Navigation */}
