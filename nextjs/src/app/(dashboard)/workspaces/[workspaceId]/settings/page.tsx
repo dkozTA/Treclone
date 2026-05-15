@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState, use } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -9,48 +11,73 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
+import {
+  useWorkspaceSettings,
+  useUpdateWorkspaceSettings,
+  useDeleteWorkspace,
+} from '@/hooks/workspace';
+import {
+  updateWorkspaceSettingsSchema,
+  type UpdateWorkspaceSettingsInput,
+} from '@/lib/validation/workspace';
 import { ArrowLeft, Trash2 } from 'lucide-react';
-
-interface Workspace {
-  id: string;
-  name: string;
-}
+import Link from 'next/link';
 
 export default function WorkspaceSettingsPage({
   params,
 }: {
   params: Promise<{ workspaceId: string }>;
 }) {
-  const [workspace, setWorkspace] = useState<Workspace | null>(null);
-  const [visibility, setVisibility] = useState('private');
+  const { workspaceId } = use(params);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  // Queries
+  const { data: settingsData, isLoading } = useWorkspaceSettings(workspaceId);
+
+  // Mutations
+  const updateSettingsMutation = useUpdateWorkspaceSettings(workspaceId);
+  const deleteMutation = useDeleteWorkspace(workspaceId);
+
+  // React Hook Form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useForm<UpdateWorkspaceSettingsInput>({
+    resolver: zodResolver(updateWorkspaceSettingsSchema),
+  });
+
+  const visibility = watch('visibility');
+
+  // Load initial data
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setWorkspace({ id: '1', name: 'Design Team' });
-    }, 1000);
+    if (settingsData?.settings) {
+      setValue('visibility', settingsData.settings.visibility);
+      setValue('notifications', settingsData.settings.notifications);
+    }
+  }, [settingsData, setValue]);
 
-    return () => clearTimeout(timer);
-  }, []);
+  const onSubmit = async (formData: UpdateWorkspaceSettingsInput) => {
+    updateSettingsMutation.mutate(formData);
+  };
 
-  if (!workspace) return <div>Loading...</div>;
+  if (isLoading) return <div>Loading...</div>;
 
   return (
     <main className="max-w-2xl mx-auto space-y-gap-lg">
       {/* Header */}
       <div className="flex items-center gap-gap-md">
         <Button variant="ghost" size="icon-sm" asChild>
-          <a href="/workspaces">
+          <Link href="/workspaces">
             <ArrowLeft className="w-4 h-4" />
-          </a>
+          </Link>
         </Button>
         <div>
           <h1 className="text-headline-lg font-heading text-ink">
             Workspace Settings
           </h1>
-          <p className="text-body text-ink-muted">
-            Manage {workspace.name} settings
-          </p>
         </div>
       </div>
 
@@ -62,87 +89,45 @@ export default function WorkspaceSettingsPage({
             Control who can see and access this workspace
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-gap-md">
-          <label className="flex items-center gap-gap-md cursor-pointer p-gap-md hover:bg-surface-1 rounded-sm">
-            <input
-              type="radio"
-              name="visibility"
-              value="private"
-              checked={visibility === 'private'}
-              onChange={(e) => setVisibility(e.target.value)}
-            />
-            <div>
-              <p className="text-body text-ink font-medium">Private</p>
-              <p className="text-label-sm text-ink-muted">
-                Only members you invite can access
-              </p>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-gap-md">
+            <div className="space-y-gap-md">
+              {['private', 'team', 'public'].map((option) => (
+                <label
+                  key={option}
+                  className="flex items-center gap-gap-md cursor-pointer p-gap-md hover:bg-surface-1 rounded-sm"
+                >
+                  <input
+                    type="radio"
+                    value={option}
+                    {...register('visibility')}
+                  />
+                  <div>
+                    <p className="text-body text-ink font-medium capitalize">
+                      {option}
+                    </p>
+                    <p className="text-label-sm text-ink-muted">
+                      {option === 'private' &&
+                        'Only members you invite can access'}
+                      {option === 'team' &&
+                        'Anyone in your organization can join'}
+                      {option === 'public' && 'Anyone with the link can access'}
+                    </p>
+                  </div>
+                </label>
+              ))}
             </div>
-          </label>
 
-          <label className="flex items-center gap-gap-md cursor-pointer p-gap-md hover:bg-surface-1 rounded-sm">
-            <input
-              type="radio"
-              name="visibility"
-              value="team"
-              checked={visibility === 'team'}
-              onChange={(e) => setVisibility(e.target.value)}
-            />
-            <div>
-              <p className="text-body text-ink font-medium">Team</p>
-              <p className="text-label-sm text-ink-muted">
-                Anyone in your organization can join
-              </p>
-            </div>
-          </label>
-
-          <label className="flex items-center gap-gap-md cursor-pointer p-gap-md hover:bg-surface-1 rounded-sm">
-            <input
-              type="radio"
-              name="visibility"
-              value="public"
-              checked={visibility === 'public'}
-              onChange={(e) => setVisibility(e.target.value)}
-            />
-            <div>
-              <p className="text-body text-ink font-medium">Public</p>
-              <p className="text-label-sm text-ink-muted">
-                Anyone with the link can access
-              </p>
-            </div>
-          </label>
-
-          <Button variant="default" className="mt-gap-md">
-            Save Visibility
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Notifications */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Notifications</CardTitle>
-          <CardDescription>Email notification preferences</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-gap-md">
-          <div className="flex items-center justify-between p-gap-md">
-            <div>
-              <p className="text-body text-ink font-medium">Daily Summary</p>
-              <p className="text-label-sm text-ink-muted">
-                Get daily activity summary
-              </p>
-            </div>
-            <input type="checkbox" defaultChecked />
-          </div>
-
-          <div className="flex items-center justify-between p-gap-md border-t border-hairline-ghost pt-gap-md">
-            <div>
-              <p className="text-body text-ink font-medium">Mention Alerts</p>
-              <p className="text-label-sm text-ink-muted">
-                Notify when mentioned in cards
-              </p>
-            </div>
-            <input type="checkbox" defaultChecked />
-          </div>
+            <Button
+              type="submit"
+              variant="default"
+              disabled={updateSettingsMutation.isPending}
+            >
+              {updateSettingsMutation.isPending
+                ? 'Saving...'
+                : 'Save Visibility'}
+            </Button>
+          </form>
         </CardContent>
       </Card>
 
@@ -158,8 +143,8 @@ export default function WorkspaceSettingsPage({
           <div className="p-gap-md bg-destructive/5 rounded-sm space-y-gap-sm">
             <p className="text-body text-ink font-medium">Delete Workspace</p>
             <p className="text-label-sm text-ink-muted">
-              Once you delete this workspace, there is no going back. All boards
-              and cards will be permanently deleted.
+              Once deleted, this cannot be undone. All boards and cards will be
+              permanently deleted.
             </p>
             <Button
               variant="destructive"
@@ -184,10 +169,8 @@ export default function WorkspaceSettingsPage({
             </CardHeader>
             <CardContent className="space-y-gap-lg">
               <p className="text-body text-ink">
-                Are you absolutely sure? This action cannot be undone. All
-                boards, lists, and cards will be permanently deleted.
+                Are you absolutely sure? This action cannot be undone.
               </p>
-
               <div className="flex gap-gap-md">
                 <Button
                   variant="outline"
@@ -199,12 +182,10 @@ export default function WorkspaceSettingsPage({
                 <Button
                   variant="destructive"
                   className="flex-1"
-                  onClick={() => {
-                    console.log('Deleting workspace:', workspace.id);
-                    setShowDeleteConfirm(false);
-                  }}
+                  onClick={() => deleteMutation.mutate()}
+                  disabled={deleteMutation.isPending}
                 >
-                  Delete
+                  {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
                 </Button>
               </div>
             </CardContent>

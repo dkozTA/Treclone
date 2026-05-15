@@ -427,10 +427,6 @@ export type BoardTemplateScalarRelationFilter = {
   isNot?: Prisma.BoardTemplateWhereInput
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type BoardTemplateCreateNestedOneWithoutTemplateListsInput = {
   create?: Prisma.XOR<Prisma.BoardTemplateCreateWithoutTemplateListsInput, Prisma.BoardTemplateUncheckedCreateWithoutTemplateListsInput>
   connectOrCreate?: Prisma.BoardTemplateCreateOrConnectWithoutTemplateListsInput

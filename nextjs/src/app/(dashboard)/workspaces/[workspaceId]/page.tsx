@@ -1,115 +1,159 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useWorkspaces, useCreateWorkspace } from '@/hooks/workspace';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Plus, Users, BookOpen } from 'lucide-react';
+  createWorkspaceSchema,
+  type CreateWorkspaceInput,
+} from '@/lib/validation/workspace';
+import { Plus } from 'lucide-react';
 
-interface Workspace {
-  id: string;
-  name: string;
-  description: string;
-  membersCount: number;
-  boardsCount: number;
-  recentBoards: Array<{ id: string; title: string }>;
-}
+export default function WorkspacesPage() {
+  const [showModal, setShowModal] = useState(false);
 
-export default function WorkspacePage({
-  params,
-}: {
-  params: Promise<{ workspaceId: string }>;
-}) {
-  const [workspace, setWorkspace] = useState<Workspace | null>(null);
+  // Queries
+  const { data, isLoading, error } = useWorkspaces();
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setWorkspace({
-        id: '1',
-        name: 'Design Team',
-        description: 'All design projects and tasks',
-        membersCount: 5,
-        boardsCount: 8,
-        recentBoards: [
-          { id: '1', title: 'Q2 Planning' },
-          { id: '2', title: 'UI Components' },
-          { id: '3', title: 'Design System' },
-        ],
-      });
-    }, 1000);
+  // Mutations
+  const createMutation = useCreateWorkspace();
 
-    return () => clearTimeout(timer);
-  }, []);
+  // React Hook Form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<CreateWorkspaceInput>({
+    resolver: zodResolver(createWorkspaceSchema),
+  });
 
-  if (!workspace) return <div>Loading...</div>;
+  const onSubmit = async (formData: CreateWorkspaceInput) => {
+    createMutation.mutate(formData, {
+      onSuccess: () => {
+        reset();
+        setShowModal(false);
+      },
+    });
+  };
+
+  if (error)
+    return <div className="text-destructive">Error: {error.message}</div>;
 
   return (
     <main className="space-y-gap-lg">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="space-y-gap-sm">
-          <h1 className="text-headline-lg font-heading text-ink">
-            {workspace.name}
-          </h1>
-          <p className="text-body text-ink-muted">{workspace.description}</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-headline-lg font-heading text-ink">Workspaces</h1>
+          <p className="text-body text-ink-muted">
+            Manage your workspaces and teams
+          </p>
         </div>
-        <Button variant="default">
-          <Plus className="h-4 w-4 mr-gap-sm" />
-          New Board
+        <Button onClick={() => setShowModal(true)}>
+          <Plus className="w-4 h-4 mr-gap-sm" />
+          New Workspace
         </Button>
       </div>
 
-      {/* Stats */}
-      <div className="grid md:grid-cols-2 gap-gap-lg">
-        <Card>
-          <CardContent className="pt-gap-lg flex items-center gap-gap-lg">
-            <Users className="w-8 h-8 text-primary" />
-            <div>
-              <p className="text-4xl font-heading text-ink">
-                {workspace.membersCount}
-              </p>
-              <p className="text-body text-ink-muted">Team Members</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-gap-lg flex items-center gap-gap-lg">
-            <BookOpen className="w-8 h-8 text-primary" />
-            <div>
-              <p className="text-4xl font-heading text-ink">
-                {workspace.boardsCount}
-              </p>
-              <p className="text-body text-ink-muted">Active Boards</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Workspaces Grid */}
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gap-lg">
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-40 rounded-sm" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gap-lg">
+          {data?.workspaces.map((workspace) => (
+            <Card
+              key={workspace.id}
+              className="cursor-pointer hover:bg-surface-1"
+            >
+              <CardContent className="p-gap-md">
+                <h3 className="text-title-md font-semibold text-ink">
+                  {workspace.name}
+                </h3>
+                <p className="text-label-sm text-ink-muted mt-gap-sm">
+                  {workspace._count?.boards || 0} boards
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
-      {/* Recent Boards */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Boards</CardTitle>
-          <CardDescription>Quick access to your recent work</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-gap-md">
-            {workspace.recentBoards.map((board) => (
-              <a
-                key={board.id}
-                href={`/workspaces/${workspace.id}/boards/${board.id}`}
-                className="block p-gap-md bg-surface-1 rounded-sm hover:bg-surface-2 transition-colors"
+      {/* Create Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Create Workspace</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="space-y-gap-md"
               >
-                <p className="text-body text-ink font-medium">{board.title}</p>
-              </a>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+                <div>
+                  <Label htmlFor="name">Workspace Name *</Label>
+                  <Input
+                    id="name"
+                    placeholder="My Awesome Workspace"
+                    {...register('name')}
+                  />
+                  {errors.name && (
+                    <p className="text-destructive text-label-sm mt-gap-sm">
+                      {errors.name.message}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Input
+                    id="description"
+                    placeholder="Optional description"
+                    {...register('description')}
+                  />
+                  {errors.description && (
+                    <p className="text-destructive text-label-sm mt-gap-sm">
+                      {errors.description.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex gap-gap-md pt-gap-md">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setShowModal(false);
+                      reset();
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="flex-1"
+                    disabled={createMutation.isPending}
+                  >
+                    {createMutation.isPending ? 'Creating...' : 'Create'}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </main>
   );
 }

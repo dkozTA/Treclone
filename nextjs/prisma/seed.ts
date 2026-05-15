@@ -39,6 +39,9 @@ async function main() {
                 data: {
                     name: faker.commerce.department(),
                     description: faker.lorem.paragraph(),
+                    visibility: faker.helpers.arrayElement(['private', 'team', 'public']),
+                    dailySummary: faker.datatype.boolean(),
+                    mentionAlerts: faker.datatype.boolean(),
                     ownerId: faker.helpers.arrayElement(users).id,
                 }
             })

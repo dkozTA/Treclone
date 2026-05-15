@@ -1,47 +1,47 @@
-import { NextRequest } from 'next/server'
-import jwt from 'jsonwebtoken'
+import { NextRequest, NextResponse } from 'next/server'
+import * as jwt from 'jsonwebtoken'
 
-interface JwtPayload {
-  userId: string
-  iat: number
-  exp: number
+export function getCookieToken(request: NextRequest): string | null {
+    const token = request.cookies.get('accessToken')?.value
+    return token || null
 }
 
-export function getAuthToken(request: NextRequest): string | null {
-  const authHeader = request.headers.get('authorization')
-  if (!authHeader) {
-    return null
-  }
+export function extractUserIdFromCookie(request: NextRequest): bigint | null {
+    const token = getCookieToken(request)
 
-  if (authHeader.toLowerCase().startsWith('bearer ')) {
-    return authHeader.substring(7)
-  }
+    if (!token) {
+        return null
+    }
 
-  return null
+    try {
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET || 'your-secret-key'
+        ) as any
+        return BigInt(decoded.userId)
+    } catch (error) {
+        return null
+    }
 }
 
-export function generateAuthToken(userId: bigint): string {
-  const secret = process.env.JWT_SECRET
-  if (!secret) {
-    throw new Error('JWT_SECRET is not defined in environment variables')
-  }
-  const token = jwt.sign({ userId: userId.toString() }, secret, {
-    expiresIn: '1d', // Token expires in 1 day
-  })
-  return token
-}
+export function verifyTokenFromCookie(request: NextRequest): {
+    valid: boolean
+    userId: bigint | null
+    error: string | null
+} {
+    const token = getCookieToken(request)
 
-export function extractUserIdFromToken(token: string): bigint | null {
-  const secret = process.env.JWT_SECRET
-  if (!secret) {
-    console.error('JWT_SECRET is not defined.')
-    return null
-  }
-  try {
-    const decoded = jwt.verify(token, secret) as JwtPayload
-    return BigInt(decoded.userId)
-  } catch (error) {
-    console.error('Invalid token:', error)
-    return null
-  }
+    if (!token) {
+        return { valid: false, userId: null, error: 'No token provided' }
+    }
+
+    try {
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET || 'your-secret-key'
+        ) as any
+        return { valid: true, userId: BigInt(decoded.userId), error: null }
+    } catch (error) {
+        return { valid: false, userId: null, error: 'Invalid token' }
+    }
 }

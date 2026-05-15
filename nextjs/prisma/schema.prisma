@@ -35,6 +35,9 @@ model Workspace {
     id          BigInt   @id @default(autoincrement())
     name        String   @db.VarChar(255)
     description String?
+    visibility      String   @default("private") // 'private' | 'team' | 'public'
+    dailySummary    Boolean  @default(true) @map("daily_summary")
+    mentionAlerts   Boolean  @default(true) @map("mention_alerts")
     ownerId     BigInt   @map("owner_id")
     createdAt   DateTime @default(now()) @map("created_at")
     updatedAt   DateTime @updatedAt @map("updated_at")
