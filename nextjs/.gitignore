@@ -21,6 +21,10 @@ next-env.d.ts
 # production
 /build
 
+# build tools
+.turbo/
+*.tsbuildinfo
+
 # misc
 .DS_Store
 *.pem
@@ -31,8 +35,21 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# OS & Editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.pem
+
+# Vercel
+.vercel
+
 # env files (can opt-in for committing if needed)
-.env*
+.env
+.env.local
+.env.*.local
 
 # vercel
 .vercel
@@ -41,7 +58,7 @@ yarn-error.log*
 *.tsbuildinfo
 
 # generated file
-app/generated
+src/app/generated
 prisma/generated/
 
 # storybook
