@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
-import { moveCardSchema } from '@/lib/validation'
+import { moveCardSchema } from '@/lib/validation/card'
 import { successResponse, errorResponse } from '@/lib/api-utils'
-import { getAuthToken, extractUserIdFromToken } from '@/lib/auth-utils'
+import { verifyTokenFromCookie } from '@/lib/auth-utils'
 
 // PATCH move card to another list
 export async function PATCH(
@@ -16,19 +16,11 @@ export async function PATCH(
     const boardIdBigInt = BigInt(boardId)
     const cardIdBigInt = BigInt(cardId)
 
-    const token = getAuthToken(request)
+    const { valid, userId } = verifyTokenFromCookie(request)
 
-    if (!token) {
-      return errorResponse('Unauthorized - missing token', 401)
+    if (!valid || !userId) {
+      return errorResponse('Unauthorized', 401)
     }
-
-    const userId = extractUserIdFromToken(token)
-
-    if (!userId) {
-      return errorResponse('Unauthorized - invalid token', 401)
-    }
-
-    // Check if board exists and user owns it
     const board = await prisma.board.findUnique({
       where: { id: boardIdBigInt },
     })

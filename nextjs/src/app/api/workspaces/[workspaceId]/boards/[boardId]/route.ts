@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
-import { updateBoardSchema } from '@/lib/validation'
+import { updateBoardSchema } from '@/lib/validation/board'
 import { successResponse, errorResponse } from '@/lib/api-utils'
-import { getAuthToken, extractUserIdFromToken } from '@/lib/auth-utils'
+import { verifyTokenFromCookie } from '@/lib/auth-utils'
 
 // GET board details
 export async function GET(
@@ -13,16 +13,10 @@ export async function GET(
     const { boardId } = await params
     const boardIdBigInt = BigInt(boardId)
 
-    const token = getAuthToken(request)
+    const { valid, userId } = verifyTokenFromCookie(request)
 
-    if (!token) {
-      return errorResponse('Unauthorized - missing token', 401)
-    }
-
-    const userId = extractUserIdFromToken(token)
-
-    if (!userId) {
-      return errorResponse('Unauthorized - invalid token', 401)
+    if (!valid || !userId) {
+      return errorResponse('Unauthorized', 401)
     }
 
     // Fetch board
@@ -85,16 +79,10 @@ export async function PUT(
     const { boardId } = await params
     const boardIdBigInt = BigInt(boardId)
 
-    const token = getAuthToken(request)
+    const { valid, userId } = verifyTokenFromCookie(request)
 
-    if (!token) {
-      return errorResponse('Unauthorized - missing token', 401)
-    }
-
-    const userId = extractUserIdFromToken(token)
-
-    if (!userId) {
-      return errorResponse('Unauthorized - invalid token', 401)
+    if (!valid || !userId) {
+      return errorResponse('Unauthorized', 401)
     }
 
     // Check if board exists and user owns it
@@ -158,16 +146,10 @@ export async function DELETE(
     const { boardId } = await params
     const boardIdBigInt = BigInt(boardId)
 
-    const token = getAuthToken(request)
+    const { valid, userId } = verifyTokenFromCookie(request)
 
-    if (!token) {
-      return errorResponse('Unauthorized - missing token', 401)
-    }
-
-    const userId = extractUserIdFromToken(token)
-
-    if (!userId) {
-      return errorResponse('Unauthorized - invalid token', 401)
+    if (!valid || !userId) {
+      return errorResponse('Unauthorized', 401)
     }
 
     // Check if board exists and user owns it

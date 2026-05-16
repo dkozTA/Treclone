@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
-import { createCardSchema } from '@/lib/validation'
+import { createCardSchema } from '@/lib/validation/card'
 import { successResponse, errorResponse } from '@/lib/api-utils'
-import { getAuthToken, extractUserIdFromToken } from '@/lib/auth-utils'
+import { verifyTokenFromCookie } from '@/lib/auth-utils'
 
 // GET all cards in a list
 export async function GET(
@@ -16,16 +16,10 @@ export async function GET(
     const boardIdBigInt = BigInt(boardId)
     const listIdBigInt = BigInt(listId)
 
-    const token = getAuthToken(request)
+    const { valid, userId } = verifyTokenFromCookie(request)
 
-    if (!token) {
-      return errorResponse('Unauthorized - missing token', 401)
-    }
-
-    const userId = extractUserIdFromToken(token)
-
-    if (!userId) {
-      return errorResponse('Unauthorized - invalid token', 401)
+    if (!valid || !userId) {
+      return errorResponse('Unauthorized', 401)
     }
 
     // Check if board exists and user owns it
@@ -107,16 +101,10 @@ export async function POST(
     const boardIdBigInt = BigInt(boardId)
     const listIdBigInt = BigInt(listId)
 
-    const token = getAuthToken(request)
+    const { valid, userId } = verifyTokenFromCookie(request)
 
-    if (!token) {
-      return errorResponse('Unauthorized - missing token', 401)
-    }
-
-    const userId = extractUserIdFromToken(token)
-
-    if (!userId) {
-      return errorResponse('Unauthorized - invalid token', 401)
+    if (!valid || !userId) {
+      return errorResponse('Unauthorized', 401)
     }
 
     // Check if board exists and user owns it

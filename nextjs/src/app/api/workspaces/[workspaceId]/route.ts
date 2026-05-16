@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
 import { successResponse, errorResponse, convertBigIntToString } from '@/lib/api-utils'
-import { getAuthToken, extractUserIdFromToken } from '@/lib/auth-utils'
+import { verifyTokenFromCookie } from '@/lib/auth-utils'
 import { z } from 'zod'
 
 const updateWorkspaceSchema = z.object({
@@ -14,16 +14,10 @@ export async function GET(
   { params }: { params: { workspaceId: string } }
 ) {
   try {
-    const token = getAuthToken(request)
+    const { valid, userId } = verifyTokenFromCookie(request)
 
-    if (!token) {
-      return errorResponse('Unauthorized - missing token', 401)
-    }
-
-    const userId = extractUserIdFromToken(token)
-
-    if (!userId) {
-      return errorResponse('Unauthorized - invalid token', 401)
+    if (!valid || !userId) {
+      return errorResponse('Unauthorized', 401)
     }
 
     const workspaceId = BigInt(params.workspaceId)
@@ -67,16 +61,10 @@ export async function PUT(
   { params }: { params: { workspaceId: string } }
 ) {
   try {
-    const token = getAuthToken(request)
+    const { valid, userId } = verifyTokenFromCookie(request)
 
-    if (!token) {
-      return errorResponse('Unauthorized - missing token', 401)
-    }
-
-    const userId = extractUserIdFromToken(token)
-
-    if (!userId) {
-      return errorResponse('Unauthorized - invalid token', 401)
+    if (!valid || !userId) {
+      return errorResponse('Unauthorized', 401)
     }
 
     const workspaceId = BigInt(params.workspaceId)
@@ -127,16 +115,10 @@ export async function DELETE(
   { params }: { params: { workspaceId: string } }
 ) {
   try {
-    const token = getAuthToken(request)
+    const { valid, userId } = verifyTokenFromCookie(request)
 
-    if (!token) {
-      return errorResponse('Unauthorized - missing token', 401)
-    }
-
-    const userId = extractUserIdFromToken(token)
-
-    if (!userId) {
-      return errorResponse('Unauthorized - invalid token', 401)
+    if (!valid || !userId) {
+      return errorResponse('Unauthorized', 401)
     }
 
     const workspaceId = BigInt(params.workspaceId)

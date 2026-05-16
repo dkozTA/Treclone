@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
-import { createBoardSchema } from '@/lib/validation'
+import { createBoardSchema } from '@/lib/validation/board'
 import { successResponse, errorResponse, convertBigIntToString } from '@/lib/api-utils'
-import { getAuthToken, extractUserIdFromToken } from '@/lib/auth-utils'
+import { verifyTokenFromCookie } from '@/lib/auth-utils'
 
 // GET all boards for a specific workspace
 export async function GET(
@@ -10,16 +10,10 @@ export async function GET(
   { params }: { params: { workspaceId: string } }
 ) {
   try {
-    const token = getAuthToken(request)
+    const { valid, userId } = verifyTokenFromCookie(request)
 
-    if (!token) {
-      return errorResponse('Unauthorized - missing token', 401)
-    }
-
-    const userId = extractUserIdFromToken(token)
-
-    if (!userId) {
-      return errorResponse('Unauthorized - invalid token', 401)
+    if (!valid || !userId) {
+      return errorResponse('Unauthorized', 401)
     }
 
     const workspaceId = BigInt(params.workspaceId)
@@ -79,16 +73,10 @@ export async function POST(
   { params }: { params: { workspaceId: string } }
 ) {
   try {
-    const token = getAuthToken(request)
+    const { valid, userId } = verifyTokenFromCookie(request)
 
-    if (!token) {
-      return errorResponse('Unauthorized - missing token', 401)
-    }
-
-    const userId = extractUserIdFromToken(token)
-
-    if (!userId) {
-      return errorResponse('Unauthorized - invalid token', 401)
+    if (!valid || !userId) {
+      return errorResponse('Unauthorized', 401)
     }
 
     const workspaceId = BigInt(params.workspaceId)

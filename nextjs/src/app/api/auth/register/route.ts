@@ -5,34 +5,37 @@ import { z } from 'zod'
 import * as bcrypt from 'bcryptjs'
 import * as jwt from 'jsonwebtoken'
 
-const loginSchema = z.object({
+const registerSchema = z.object({
     email: z.email('Invalid email address'),
-    password: z.string().min(1, 'Password is required'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    fullName: z.string().min(2, 'Full name must be at least 2 characters'),
 })
 
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
-        const validatedData = loginSchema.parse(body)
+        const validatedData = registerSchema.parse(body)
 
-        // Find user
-        const user = await prisma.user.findUnique({
+        // Check if user already exists
+        const existingUser = await prisma.user.findUnique({
             where: { email: validatedData.email },
         })
 
-        if (!user) {
-            return errorResponse('Invalid email or password', 401)
+        if (existingUser) {
+            return errorResponse('Email already registered', 409)
         }
 
-        // Verify password
-        const isPasswordValid = await bcrypt.compare(
-            validatedData.password,
-            user.passwordHash
-        )
+        // Hash password
+        const hashedPassword = await bcrypt.hash(validatedData.password, 10)
 
-        if (!isPasswordValid) {
-            return errorResponse('Invalid email or password', 401)
-        }
+        // Create user
+        const user = await prisma.user.create({
+            data: {
+                email: validatedData.email,
+                passwordHash: hashedPassword,
+                fullName: validatedData.fullName,
+            },
+        })
 
         // Create JWT token
         const token = jwt.sign(
@@ -48,7 +51,6 @@ export async function POST(request: NextRequest) {
             { expiresIn: '30d' }
         )
 
-        // Store refresh token in DB
         await prisma.refreshToken.create({
             data: {
                 userId: user.id,
@@ -60,13 +62,14 @@ export async function POST(request: NextRequest) {
         // Create response
         const response = NextResponse.json(
             successResponse({
-                message: 'Login successful',
+                message: 'User registered successfully',
                 user: {
                     id: user.id.toString(),
                     email: user.email,
                     fullName: user.fullName,
                 },
-            })
+            }),
+            { status: 201 }
         )
 
         // Set HTTP-only cookies
@@ -76,7 +79,7 @@ export async function POST(request: NextRequest) {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            maxAge: 7 * 24 * 60 * 60,
+            maxAge: 7 * 24 * 60 * 60, // 7 days
         })
 
         response.cookies.set({
@@ -85,7 +88,7 @@ export async function POST(request: NextRequest) {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            maxAge: 30 * 24 * 60 * 60,
+            maxAge: 30 * 24 * 60 * 60, // 30 days
         })
 
         return response
@@ -94,7 +97,7 @@ export async function POST(request: NextRequest) {
             return errorResponse(error.issues[0].message, 400)
         }
         const errorMessage =
-            error instanceof Error ? error.message : 'Login failed'
+            error instanceof Error ? error.message : 'Registration failed'
         return errorResponse(errorMessage, 400)
     }
 }
