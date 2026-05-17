@@ -1,29 +1,15 @@
 import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
 import { successResponse, errorResponse } from '@/lib/api-utils'
-import * as jwt from 'jsonwebtoken'
+import { verifyTokenFromCookie } from '@/lib/auth-utils'
 
 export async function GET(request: NextRequest) {
     try {
-        // Get token from cookies
-        const token = request.cookies.get('accessToken')?.value
+        const { valid, userId, error } = verifyTokenFromCookie(request)
 
-        if (!token) {
-            return errorResponse('Unauthorized - missing token', 401)
+        if (!valid || !userId) {
+            return errorResponse(error || 'Unauthorized', 401)
         }
-
-        // Verify token
-        let decoded: any
-        try {
-            decoded = jwt.verify(
-                token,
-                process.env.JWT_SECRET || 'your-secret-key'
-            )
-        } catch (error) {
-            return errorResponse('Unauthorized - invalid token', 401)
-        }
-
-        const userId = BigInt(decoded.userId)
 
         // Get user from database
         const user = await prisma.user.findUnique({

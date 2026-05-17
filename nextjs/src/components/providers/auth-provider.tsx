@@ -15,13 +15,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function fetchCurrentUser() {
     try {
-      const response = await fetch('/api/auth/me');
+      const response = await fetch('/api/auth/me', {
+        credentials: 'include', // Send cookies
+      });
       if (response.ok) {
         const data = await response.json();
         setUser({
-          id: data.user.id.toString(),
-          email: data.user.email,
-          fullName: data.user.fullName,
+          id: data.data.user.id.toString(),
+          email: data.data.user.email,
+          fullName: data.data.user.fullName,
         });
         setIsAuthenticated(true);
       } else {
