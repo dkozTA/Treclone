@@ -75,12 +75,7 @@ export async function withMiddleware(
 
             // Audit log mutations
             if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-                const action =
-                    method === 'POST'
-                        ? AuditAction.CREATE
-                        : method === 'DELETE'
-                            ? AuditAction.DELETE
-                            : AuditAction.UPDATE
+                const action = getAuditAction(method)
 
                 try {
                     await createAuditLog({
@@ -94,7 +89,6 @@ export async function withMiddleware(
                         metadata: { correlationId, statusCode: response.status },
                     })
                 } catch (auditError) {
-                    // Log audit failure but don't fail the request
                     console.error('[Endpoint] Failed to create audit log:', auditError, {
                         correlationId,
                         endpoint,
@@ -128,10 +122,12 @@ export async function withMiddleware(
 
             // Audit log failures
             if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+                const action = getAuditAction(method)
+
                 try {
                     await createAuditLog({
                         userId: userId || 'anonymous',
-                        action: AuditAction.UPDATE,
+                        action,
                         entity,
                         entityId: extractIdFromUrl(endpoint),
                         ipAddress: clientIp,
@@ -141,7 +137,6 @@ export async function withMiddleware(
                         metadata: { correlationId },
                     })
                 } catch (auditError) {
-                    // Log audit failure but don't fail the response
                     console.error('[Endpoint] Failed to create failure audit log:', auditError, {
                         correlationId,
                         endpoint,
@@ -162,7 +157,14 @@ export async function withMiddleware(
     }
 }
 
+function getAuditAction(method: string): AuditAction {
+    if (method === 'POST') return AuditAction.CREATE
+    if (method === 'DELETE') return AuditAction.DELETE
+    return AuditAction.UPDATE
+}
+
 function extractIdFromUrl(url: string): string {
-    const match = url.match(/\/([0-9]+)(?:\/|$)/)
+    const regex = /\/(\d+)(?:\/|$)/
+    const match = regex.exec(url)
     return match?.[1] || 'unknown'
 }

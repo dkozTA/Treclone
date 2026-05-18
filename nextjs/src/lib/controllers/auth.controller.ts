@@ -47,7 +47,10 @@ export class AuthController {
             return response
         } catch (error) {
             const authError = handleAuthError(error)
-            return errorResponse(authError.message, authError.statusCode)
+            return NextResponse.json(
+                errorResponse(authError.message, authError.statusCode),
+                { status: authError.statusCode }
+            )
         }
     }
 
@@ -91,7 +94,10 @@ export class AuthController {
             return response
         } catch (error) {
             const authError = handleAuthError(error)
-            return errorResponse(authError.message, authError.statusCode)
+            return NextResponse.json(
+                errorResponse(authError.message, authError.statusCode),
+                { status: authError.statusCode }
+            )
         }
     }
 
@@ -100,7 +106,10 @@ export class AuthController {
             const refreshToken = request.cookies.get('refreshToken')?.value
 
             if (!refreshToken) {
-                return errorResponse('No refresh token provided', 401)
+                return NextResponse.json(
+                    errorResponse('No refresh token provided', 401),
+                    { status: 401 }
+                )
             }
 
             const newAccessToken = await this.service.refreshAccessToken(refreshToken)
@@ -124,7 +133,10 @@ export class AuthController {
             return response
         } catch (error) {
             const authError = handleAuthError(error)
-            return errorResponse(authError.message, authError.statusCode)
+            return NextResponse.json(
+                errorResponse(authError.message, authError.statusCode),
+                { status: authError.statusCode }
+            )
         }
     }
 
@@ -135,28 +147,22 @@ export class AuthController {
             if (refreshToken) {
                 await this.service.logout(refreshToken)
             }
-
-            const response = NextResponse.json(
-                successResponse({
-                    message: 'Logged out successfully',
-                })
-            )
-
-            response.cookies.set({ name: 'accessToken', value: '', httpOnly: true, maxAge: 0 })
-            response.cookies.set({ name: 'refreshToken', value: '', httpOnly: true, maxAge: 0 })
-
-            return response
         } catch (error) {
-            // Still clear cookies on error
-            const response = NextResponse.json(
-                successResponse({
-                    message: 'Logged out successfully',
-                })
-            )
-            response.cookies.set({ name: 'accessToken', value: '', httpOnly: true, maxAge: 0 })
-            response.cookies.set({ name: 'refreshToken', value: '', httpOnly: true, maxAge: 0 })
-            return response
+            // Log logout error but don't fail - always clear cookies
+            console.error('[Auth Logout] Error revoking token:', error)
         }
+
+        // Always return success and clear cookies, regardless of error
+        const response = NextResponse.json(
+            successResponse({
+                message: 'Logged out successfully',
+            })
+        )
+
+        response.cookies.set({ name: 'accessToken', value: '', httpOnly: true, maxAge: 0 })
+        response.cookies.set({ name: 'refreshToken', value: '', httpOnly: true, maxAge: 0 })
+
+        return response
     }
 
     async getMe(request: NextRequest, userId: bigint) {

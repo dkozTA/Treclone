@@ -123,15 +123,26 @@ export class AuthService {
     async refreshAccessToken(refreshToken: string) {
         try {
             // Verify token signature
-            let decoded
             try {
-                decoded = jwt.verify(refreshToken, JWT_SECRET) as any
-            } catch (error) {
-                throw new AuthError(
-                    'Invalid or expired refresh token',
-                    401,
-                    AuthErrorCode.TOKEN_EXPIRED
-                )
+                jwt.verify(refreshToken, JWT_SECRET)
+            } catch (verifyError) {
+                // Check error type and throw appropriate AuthError
+                if (verifyError instanceof jwt.TokenExpiredError) {
+                    throw new AuthError(
+                        'Refresh token expired',
+                        401,
+                        AuthErrorCode.TOKEN_EXPIRED
+                    )
+                }
+                if (verifyError instanceof jwt.JsonWebTokenError) {
+                    throw new AuthError(
+                        'Invalid refresh token',
+                        401,
+                        AuthErrorCode.INVALID_TOKEN
+                    )
+                }
+                // Re-throw unknown errors for outer catch
+                throw verifyError
             }
 
             // Check if token exists in DB
@@ -154,6 +165,7 @@ export class AuthService {
             return newAccessToken
         } catch (error) {
             if (error instanceof AuthError) throw error
+            console.error('Token refresh failed:', error)
             throw new AuthError('Token refresh failed', 401, AuthErrorCode.INTERNAL_ERROR)
         }
     }
