@@ -163,20 +163,27 @@ export class AuthController {
         try {
             const user = await this.service.getUser(userId)
 
-            return successResponse({
-                message: 'User data retrieved successfully',
-                user: {
-                    ...user,
-                    id: user.id.toString(),
-                    ownedWorkspaces: user.ownedWorkspaces.map((ws) => ({
-                        ...ws,
-                        id: ws.id.toString(),
-                    })),
-                },
-            })
+            const response = NextResponse.json(
+                successResponse({
+                    message: 'User data retrieved successfully',
+                    user: {
+                        ...user,
+                        id: user.id.toString(),
+                        ownedWorkspaces: user.ownedWorkspaces.map((ws) => ({
+                            ...ws,
+                            id: ws.id.toString(),
+                        })),
+                    },
+                })
+            )
+
+            return response
         } catch (error) {
             const authError = handleAuthError(error)
-            return errorResponse(authError.message, authError.statusCode)
+            return NextResponse.json(
+                errorResponse(authError.message, authError.statusCode),
+                { status: authError.statusCode }
+            )
         }
     }
 
@@ -191,17 +198,24 @@ export class AuthController {
             }
 
             // Always return same message (prevent email enumeration)
-            return successResponse({
-                message: 'If email exists, password reset link has been sent',
-                // Only return token in development
-                ...(process.env.NODE_ENV === 'development' &&
-                    result.resetToken && {
-                    resetToken: result.resetToken,
-                }),
-            })
+            const response = NextResponse.json(
+                successResponse({
+                    message: 'If email exists, password reset link has been sent',
+                    // Only return token in development
+                    ...(process.env.NODE_ENV === 'development' &&
+                        result.resetToken && {
+                        resetToken: result.resetToken,
+                    }),
+                })
+            )
+
+            return response
         } catch (error) {
             const authError = handleAuthError(error)
-            return errorResponse(authError.message, authError.statusCode)
+            return NextResponse.json(
+                errorResponse(authError.message, authError.statusCode),
+                { status: authError.statusCode }
+            )
         }
     }
 
@@ -210,17 +224,24 @@ export class AuthController {
             const body = await request.json()
             const user = await this.service.resetPassword(body)
 
-            return successResponse({
-                message: 'Password reset successful',
-                user: {
-                    id: user.id.toString(),
-                    email: user.email,
-                    fullName: user.fullName,
-                },
-            })
+            const response = NextResponse.json(
+                successResponse({
+                    message: 'Password reset successful',
+                    user: {
+                        id: user.id.toString(),
+                        email: user.email,
+                        fullName: user.fullName,
+                    },
+                })
+            )
+
+            return response
         } catch (error) {
             const authError = handleAuthError(error)
-            return errorResponse(authError.message, authError.statusCode)
+            return NextResponse.json(
+                errorResponse(authError.message, authError.statusCode),
+                { status: authError.statusCode }
+            )
         }
     }
 }

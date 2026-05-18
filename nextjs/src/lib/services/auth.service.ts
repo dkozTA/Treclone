@@ -12,7 +12,7 @@ import { JWT_SECRET } from '@/lib/auth-utils'
 import { AuthError, AuthErrorCode } from '@/lib/utils/error-handler'
 
 export class AuthService {
-    private readonly repository = new AuthRepository()
+    private readonly repository = new AuthRepository();
 
     async register(credentials: unknown) {
         try {
