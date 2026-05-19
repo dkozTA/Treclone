@@ -20,7 +20,7 @@ export function useProfile() {
     return useQuery<ProfileResponse, Error>({
         queryKey: ['profile'],
         queryFn: async () => {
-            const response = await fetch('/api/auth/profile', {
+            const response = await fetch('/api/profile', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

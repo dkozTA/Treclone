@@ -25,7 +25,7 @@ export function useUpdateProfile() {
 
     return useMutation<ProfileResponse, Error, UpdateProfileInput>({
         mutationFn: async (data) => {
-            const response = await fetch('/api/auth/profile', {
+            const response = await fetch('/api/profile', {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
