@@ -1,23 +1,31 @@
-"use client"
+'use client';
+import * as React from 'react';
+import { Label as LabelPrimitive } from 'radix-ui';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
 
-import * as React from "react"
-import { Label as LabelPrimitive } from "radix-ui"
-import { cn } from "@/lib/utils"
+const labelVariants = cva('text-label-lg font-semibold text-ink', {
+  variants: {
+    size: {
+      sm: 'text-label-sm',
+      md: 'text-label-md',
+      lg: 'text-label-lg',
+    },
+  },
+});
 
 function Label({
   className,
+  size = 'lg',
   ...props
-}: React.ComponentProps<typeof LabelPrimitive.Root>) {
+}: React.ComponentProps<typeof LabelPrimitive.Root> &
+  VariantProps<typeof labelVariants>) {
   return (
     <LabelPrimitive.Root
-      data-slot="label"
-      className={cn(
-        "flex items-center gap-2 text-xs font-semibold tracking-wide uppercase select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 peer-data-[slot=checkbox]:text-sm peer-data-[slot=checkbox]:font-normal peer-data-[slot=checkbox]:tracking-normal peer-data-[slot=checkbox]:normal-case peer-data-[slot=radio-group-item]:text-sm peer-data-[slot=radio-group-item]:font-normal peer-data-[slot=radio-group-item]:tracking-normal peer-data-[slot=radio-group-item]:normal-case peer-data-[slot=switch]:text-sm peer-data-[slot=switch]:font-normal peer-data-[slot=switch]:tracking-normal peer-data-[slot=switch]:normal-case",
-        className
-      )}
+      className={cn(labelVariants({ size }), className)}
       {...props}
     />
-  )
+  );
 }
 
-export { Label }
+export { Label, labelVariants };

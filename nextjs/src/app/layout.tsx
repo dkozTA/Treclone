@@ -5,7 +5,6 @@ import './globals.css';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 import { QueryProvider } from '@/components/providers/query-provider';
-import { ModalProvider } from '@/components/providers/modal-provider';
 import { AuthProvider } from '@/components/providers/auth-provider';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -32,9 +31,7 @@ export default function RootLayout({
           >
             {/* Global UI Overlays */}
             <Toaster position="bottom-right" />
-            <ModalProvider />
             {/* Main Application */}
-
             <AuthProvider>{children}</AuthProvider>
           </ThemeProvider>
         </QueryProvider>

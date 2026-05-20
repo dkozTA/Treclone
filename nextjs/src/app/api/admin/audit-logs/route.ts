@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
         // TODO: Add admin role check
         const { searchParams } = new URL(request.url)
         const workspaceId = searchParams.get('workspaceId')
-        const limit = parseInt(searchParams.get('limit') || '50')
-        const offset = parseInt(searchParams.get('offset') || '0')
+        const limit = Number.parseInt(searchParams.get('limit') || '50')
+        const offset = Number.parseInt(searchParams.get('offset') || '0')
 
         if (!workspaceId) {
             return errorResponse('workspaceId is required', 400)

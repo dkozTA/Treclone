@@ -1,7 +1,0 @@
-export { CreateBoardModal } from './create-board-modal'
-export { DeleteBoardModal } from './delete-board-modal'
-export { CreateCardModal } from './create-card-modal'
-export { EditCardModal } from './edit-card-modal'
-export { CreateListModal } from './create-list-modal'
-export { AddMemberModal } from './add-member-modal'
-export { EditProfileModal } from './edit-profile-modal'
