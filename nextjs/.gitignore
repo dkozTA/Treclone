@@ -76,11 +76,9 @@ src/stories/
 # design
 design/
 
-command.txt
-mega-prompt.md
-
+COMMAND.md
+MEGA_PROMPT.md
 bruno/
-
 UI_INSTRUCTION.md
-
 .vscode/
+tests/
