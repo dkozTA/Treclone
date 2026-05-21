@@ -1,7 +1,6 @@
 'use client';
 
-import { use } from 'react';
-import { useEffect } from 'react';
+import { use, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -18,9 +17,9 @@ import Link from 'next/link';
 
 export default function EditWorkspacePage({
   params,
-}: {
+}: Readonly<{
   params: Promise<{ workspaceId: string }>;
-}) {
+}>) {
   const { workspaceId } = use(params);
 
   const updateMutation = useUpdateWorkspace(workspaceId);

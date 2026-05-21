@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { successResponse, errorResponse, convertBigIntToString } from '@/lib/api-utils'
+import { successResponse, errorResponse, convertBigIntToString } from '@/lib/utils/api-utils'
 import { BoardMemberService } from '@/lib/services/board-member.service'
 import { handleAuthError } from '@/lib/utils/error-handler'
 

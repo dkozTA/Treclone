@@ -25,9 +25,9 @@ import Link from 'next/link';
 
 export default function WorkspaceSettingsPage({
   params,
-}: {
+}: Readonly<{
   params: Promise<{ workspaceId: string }>;
-}) {
+}>) {
   const { workspaceId } = use(params);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 

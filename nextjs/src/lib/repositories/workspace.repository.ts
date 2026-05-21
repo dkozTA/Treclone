@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma'
+import prisma from '@/lib/db/prisma'
 
 export class WorkspaceRepository {
     async getWorkspacesByUserId(userId: bigint) {

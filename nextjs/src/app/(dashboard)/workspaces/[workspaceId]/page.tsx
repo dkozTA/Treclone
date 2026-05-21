@@ -17,7 +17,8 @@ export default function WorkspaceDetailPage() {
   const [showCreateBoardModal, setShowCreateBoardModal] = useState(false);
 
   // Queries
-  const { data: workspace, isLoading: workspaceLoading } = useWorkspace(workspaceId);
+  const { data: workspace, isLoading: workspaceLoading } =
+    useWorkspace(workspaceId);
   const { data: boardsData, isLoading: boardsLoading } = useBoards(workspaceId);
   const createBoardMutation = useCreateBoard(workspaceId);
 
@@ -37,7 +38,7 @@ export default function WorkspaceDetailPage() {
       <main className="space-y-gap-lg">
         <Skeleton className="h-12 w-64" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gap-lg">
-          {[...Array(3)].map((_, i) => (
+          {[new Array(3)].map((_, i) => (
             <Card key={i}>
               <CardContent className="pt-gap-lg space-y-gap-md">
                 <Skeleton className="h-6 w-32" />
@@ -72,7 +73,7 @@ export default function WorkspaceDetailPage() {
       {/* Boards Grid */}
       {boardsLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gap-lg">
-          {[...Array(3)].map((_, i) => (
+          {[new Array(3)].map((_, i) => (
             <Card key={i}>
               <CardContent className="pt-gap-lg space-y-gap-md">
                 <Skeleton className="h-6 w-32" />
@@ -169,7 +170,9 @@ function CreateBoardModal({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <Card className="w-full max-w-md">
         <div className="p-gap-lg space-y-gap-lg border-b border-hairline-ghost">
-          <h2 className="text-headline-sm font-heading text-ink">Create Board</h2>
+          <h2 className="text-headline-sm font-heading text-ink">
+            Create Board
+          </h2>
         </div>
 
         <div className="p-gap-lg space-y-gap-md">

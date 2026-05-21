@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
-import { successResponse, errorResponse } from '@/lib/api-utils'
-import { verifyTokenFromCookie } from '@/lib/auth-utils'
-import { getAuditLogs } from '@/lib/audit-log'
+import { successResponse, errorResponse } from '@/lib/utils/api-utils'
+import { verifyTokenFromCookie } from '@/lib/utils/auth'
+import { getAuditLogs } from '@/lib/types/audit-log'
 
 export async function GET(request: NextRequest) {
     try {

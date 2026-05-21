@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { successResponse, errorResponse, convertBigIntToString } from '@/lib/api-utils'
+import { successResponse, errorResponse, convertBigIntToString } from '@/lib/utils/api-utils'
 import { CardService } from '@/lib/services/card.service'
+import { createAuditLog } from '@/lib/services/audit.service'
 import { handleAuthError } from '@/lib/utils/error-handler'
+import prisma from '@/lib/db/prisma'
 
 export class CardController {
     private readonly service = new CardService()
@@ -30,6 +32,28 @@ export class CardController {
             const body = await request.json()
             const card = await this.service.createCard(listId, userId, body)
 
+            // Get workspace ID through list -> board relationship
+            const list = await prisma.list.findUnique({
+                where: { id: listId },
+                select: { board: { select: { workspaceId: true } } },
+            })
+
+            // Log the action
+            await createAuditLog({
+                userId,
+                action: 'CREATE',
+                entity: 'CARD',
+                entityId: BigInt(card.id),
+                workspaceId: list?.board?.workspaceId ? BigInt(list.board.workspaceId) : undefined,
+                status: 'SUCCESS',
+                metadata: {
+                    title: card.title,
+                    description: card.description,
+                    listId: listId.toString(),
+                    position: card.position,
+                },
+            })
+
             return NextResponse.json(
                 successResponse(
                     {
@@ -40,6 +64,24 @@ export class CardController {
                 { status: 201 }
             )
         } catch (error) {
+            // Log failure
+            if (error instanceof Error) {
+                const list = await prisma.list.findUnique({
+                    where: { id: listId },
+                    select: { board: { select: { workspaceId: true } } },
+                })
+
+                await createAuditLog({
+                    userId,
+                    action: 'CREATE',
+                    entity: 'CARD',
+                    entityId: BigInt(0),
+                    workspaceId: list?.board?.workspaceId ? BigInt(list.board.workspaceId) : undefined,
+                    status: 'FAILURE',
+                    errorMessage: error.message,
+                })
+            }
+
             const authError = handleAuthError(error)
             return NextResponse.json(
                 errorResponse(authError.message, authError.statusCode),
@@ -70,7 +112,43 @@ export class CardController {
     async updateCard(request: NextRequest, cardId: bigint, userId: bigint) {
         try {
             const body = await request.json()
+            const beforeUpdate = await this.service.getCardById(cardId, userId)
             const card = await this.service.updateCard(cardId, userId, body)
+
+            // Get workspace ID through card -> list -> board relationship
+            const list = await prisma.list.findUnique({
+                where: { id: card.listId },
+                select: { board: { select: { workspaceId: true } } },
+            })
+
+            // Log the action
+            await createAuditLog({
+                userId,
+                action: 'UPDATE',
+                entity: 'CARD',
+                entityId: cardId,
+                workspaceId: list?.board?.workspaceId ? BigInt(list.board.workspaceId) : undefined,
+                status: 'SUCCESS',
+                changes: {
+                    before: {
+                        title: beforeUpdate.title,
+                        description: beforeUpdate.description,
+                        assigneeUserId: beforeUpdate.assigneeUserId?.toString() || null,
+                    },
+                    after: {
+                        title: card.title,
+                        description: card.description,
+                        assigneeUserId: card.assigneeUserId?.toString() || null,
+                    },
+                },
+                metadata: {
+                    title: card.title,
+                    description: card.description,
+                    listId: card.listId.toString(),
+                    position: card.position,
+                    assigneeUserId: card.assigneeUserId?.toString() || null,
+                },
+            })
 
             return NextResponse.json(
                 successResponse({
@@ -79,6 +157,18 @@ export class CardController {
                 })
             )
         } catch (error) {
+            // Log failure
+            if (error instanceof Error) {
+                await createAuditLog({
+                    userId,
+                    action: 'UPDATE',
+                    entity: 'CARD',
+                    entityId: cardId,
+                    status: 'FAILURE',
+                    errorMessage: error.message,
+                })
+            }
+
             const authError = handleAuthError(error)
             return NextResponse.json(
                 errorResponse(authError.message, authError.statusCode),
@@ -90,7 +180,46 @@ export class CardController {
     async moveCard(request: NextRequest, cardId: bigint, userId: bigint) {
         try {
             const body = await request.json()
+            const beforeMove = await this.service.getCardById(cardId, userId)
             const card = await this.service.moveCard(cardId, userId, body)
+
+            if (!card) {
+                return NextResponse.json(
+                    errorResponse('Card not found', 404),
+                    { status: 404 }
+                )
+            }
+            // Get workspace ID through card -> list -> board relationship
+            const list = await prisma.list.findUnique({
+                where: { id: card.listId },
+                select: { board: { select: { workspaceId: true } } },
+            })
+
+            // Log the action
+            await createAuditLog({
+                userId,
+                action: 'UPDATE',
+                entity: 'CARD',
+                entityId: cardId,
+                workspaceId: list?.board?.workspaceId ? BigInt(list.board.workspaceId) : undefined,
+                status: 'SUCCESS',
+                changes: {
+                    before: {
+                        listId: beforeMove.listId.toString(),
+                        position: beforeMove.position,
+                    },
+                    after: {
+                        listId: card.listId.toString(),
+                        position: card.position,
+                    },
+                },
+                metadata: {
+                    title: card.title,
+                    listId: card.listId.toString(),
+                    position: card.position,
+                    action: 'moved',
+                },
+            })
 
             return NextResponse.json(
                 successResponse({
@@ -99,6 +228,18 @@ export class CardController {
                 })
             )
         } catch (error) {
+            // Log failure
+            if (error instanceof Error) {
+                await createAuditLog({
+                    userId,
+                    action: 'UPDATE',
+                    entity: 'CARD',
+                    entityId: cardId,
+                    status: 'FAILURE',
+                    errorMessage: error.message,
+                })
+            }
+
             const authError = handleAuthError(error)
             return NextResponse.json(
                 errorResponse(authError.message, authError.statusCode),
@@ -109,7 +250,32 @@ export class CardController {
 
     async deleteCard(request: NextRequest, cardId: bigint, userId: bigint) {
         try {
+            // Get card info before deletion
+            const card = await this.service.getCardById(cardId, userId)
+
+            // Get workspace ID through card -> list -> board relationship
+            const list = await prisma.list.findUnique({
+                where: { id: card.listId },
+                select: { board: { select: { workspaceId: true } } },
+            })
+
             await this.service.deleteCard(cardId, userId)
+
+            // Log the action
+            await createAuditLog({
+                userId,
+                action: 'DELETE',
+                entity: 'CARD',
+                entityId: cardId,
+                workspaceId: list?.board?.workspaceId ? BigInt(list.board.workspaceId) : undefined,
+                status: 'SUCCESS',
+                metadata: {
+                    title: card.title,
+                    description: card.description,
+                    listId: card.listId.toString(),
+                    position: card.position,
+                },
+            })
 
             return NextResponse.json(
                 successResponse({
@@ -117,6 +283,18 @@ export class CardController {
                 })
             )
         } catch (error) {
+            // Log failure
+            if (error instanceof Error) {
+                await createAuditLog({
+                    userId,
+                    action: 'DELETE',
+                    entity: 'CARD',
+                    entityId: cardId,
+                    status: 'FAILURE',
+                    errorMessage: error.message,
+                })
+            }
+
             const authError = handleAuthError(error)
             return NextResponse.json(
                 errorResponse(authError.message, authError.statusCode),

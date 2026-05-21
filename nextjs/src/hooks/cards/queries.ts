@@ -115,3 +115,20 @@ export function useAllBoardCards(
         enabled: !!workspaceId && !!boardId,
     })
 }
+
+// Fetch single card by cardId (searches across all board cards)
+export function useCardByBoardId(
+    workspaceId: string,
+    boardId: string,
+    cardId: string
+) {
+    const { data: allCards, isLoading, error } = useAllBoardCards(workspaceId, boardId)
+
+    const card = allCards?.data?.find((c: Card) => c.id === cardId)
+
+    return {
+        data: card ? { success: true, data: card } : null,
+        isLoading,
+        error,
+    }
+}

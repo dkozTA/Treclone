@@ -60,7 +60,8 @@ export const ModelName = {
   WorkspaceMember: 'WorkspaceMember',
   BoardMember: 'BoardMember',
   BoardTemplate: 'BoardTemplate',
-  TemplateList: 'TemplateList'
+  TemplateList: 'TemplateList',
+  AuditLog: 'AuditLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -205,6 +206,25 @@ export const TemplateListScalarFieldEnum = {
 } as const
 
 export type TemplateListScalarFieldEnum = (typeof TemplateListScalarFieldEnum)[keyof typeof TemplateListScalarFieldEnum]
+
+
+export const AuditLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  action: 'action',
+  entity: 'entity',
+  entityId: 'entityId',
+  workspaceId: 'workspaceId',
+  changes: 'changes',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  status: 'status',
+  errorMessage: 'errorMessage',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
 
 
 export const SortOrder = {

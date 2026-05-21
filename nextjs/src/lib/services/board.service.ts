@@ -1,7 +1,7 @@
 import { BoardRepository } from '@/lib/repositories/board.repository'
 import { createBoardSchema, updateBoardSchema } from '@/lib/validation/board'
 import { AuthError, AuthErrorCode } from '@/lib/utils/error-handler'
-import prisma from '@/lib/prisma'
+import prisma from '@/lib/db/prisma'
 
 export class BoardService {
     private readonly repository = new BoardRepository()

@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma'
+import prisma from '@/lib/db/prisma'
 
 export class CardRepository {
     async getCardsByListId(listId: bigint) {

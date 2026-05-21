@@ -1,7 +1,7 @@
 'use client';
 
 import { Droppable } from '@hello-pangea/dnd';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/cn';
 import { KanbanCard } from './kanban-card';
 
 interface Card {

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { WorkspaceSettingsController } from '@/lib/controllers/workspace-settings.controller'
-import { verifyTokenFromCookie } from '@/lib/auth-utils'
-import { errorResponse } from '@/lib/api-utils'
+import { verifyTokenFromCookie } from '@/lib/utils/auth'
+import { errorResponse } from '@/lib/utils/api-utils'
 
 const controller = new WorkspaceSettingsController()
 

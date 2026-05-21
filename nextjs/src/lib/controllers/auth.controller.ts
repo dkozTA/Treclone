@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { successResponse, errorResponse } from '@/lib/api-utils'
+import { successResponse, errorResponse } from '@/lib/utils/api-utils'
 import { AuthService } from '@/lib/services/auth.service'
 import { handleAuthError } from '@/lib/utils/error-handler'
 

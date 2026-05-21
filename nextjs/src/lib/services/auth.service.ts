@@ -8,7 +8,7 @@ import {
     resetPasswordSchema,
 } from '@/lib/validation/auth'
 import { AuthRepository } from '@/lib/repositories/auth.repository'
-import { JWT_SECRET } from '@/lib/auth-utils'
+import { JWT_SECRET } from '@/lib/utils/auth'
 import { AuthError, AuthErrorCode } from '@/lib/utils/error-handler'
 
 export class AuthService {

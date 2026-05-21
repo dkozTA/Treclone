@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import * as jwt from 'jsonwebtoken'
-import { JWT_SECRET } from '@/lib/auth-utils'
+import { JWT_SECRET } from '@/lib/utils/auth'
 
 const protectedRoutes = ['/workspaces', '/(dashboard)']
 const publicRoutes = ['/auth/login', '/auth/register', '/auth/forgot-password', '/auth/reset-password', '/']

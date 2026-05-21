@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { successResponse, errorResponse, convertBigIntToString } from '@/lib/api-utils'
+import { successResponse, errorResponse, convertBigIntToString } from '@/lib/utils/api-utils'
 import { WorkspaceService } from '@/lib/services/workspace.service'
+import { createAuditLog } from '@/lib/services/audit.service'
 import { handleAuthError } from '@/lib/utils/error-handler'
 
 export class WorkspaceController {
@@ -30,6 +31,20 @@ export class WorkspaceController {
             const body = await request.json()
             const workspace = await this.service.createWorkspace(userId, body)
 
+            // Log the action
+            await createAuditLog({
+                userId,
+                action: 'CREATE',
+                entity: 'WORKSPACE',
+                entityId: BigInt(workspace.id),
+                workspaceId: BigInt(workspace.id),
+                status: 'SUCCESS',
+                metadata: {
+                    name: workspace.name,
+                    description: workspace.description,
+                },
+            })
+
             return NextResponse.json(
                 successResponse(
                     {
@@ -40,6 +55,18 @@ export class WorkspaceController {
                 { status: 201 }
             )
         } catch (error) {
+            // Log failure
+            if (error instanceof Error) {
+                await createAuditLog({
+                    userId,
+                    action: 'CREATE',
+                    entity: 'WORKSPACE',
+                    entityId: BigInt(0),
+                    status: 'FAILURE',
+                    errorMessage: error.message,
+                })
+            }
+
             const authError = handleAuthError(error)
             return NextResponse.json(
                 errorResponse(authError.message, authError.statusCode),
@@ -74,7 +101,32 @@ export class WorkspaceController {
     ) {
         try {
             const body = await request.json()
+            const beforeUpdate = await this.service.getWorkspaceById(workspaceId, userId)
             const workspace = await this.service.updateWorkspace(workspaceId, userId, body)
+
+            // Log the action
+            await createAuditLog({
+                userId,
+                action: 'UPDATE',
+                entity: 'WORKSPACE',
+                entityId: workspaceId,
+                workspaceId,
+                status: 'SUCCESS',
+                changes: {
+                    before: {
+                        name: beforeUpdate.name,
+                        description: beforeUpdate.description,
+                    },
+                    after: {
+                        name: workspace.name,
+                        description: workspace.description,
+                    },
+                },
+                metadata: {
+                    name: workspace.name,
+                    description: workspace.description,
+                },
+            })
 
             return NextResponse.json(
                 successResponse({
@@ -83,6 +135,19 @@ export class WorkspaceController {
                 })
             )
         } catch (error) {
+            // Log failure
+            if (error instanceof Error) {
+                await createAuditLog({
+                    userId,
+                    action: 'UPDATE',
+                    entity: 'WORKSPACE',
+                    entityId: workspaceId,
+                    workspaceId,
+                    status: 'FAILURE',
+                    errorMessage: error.message,
+                })
+            }
+
             const authError = handleAuthError(error)
             return NextResponse.json(
                 errorResponse(authError.message, authError.statusCode),
@@ -97,7 +162,24 @@ export class WorkspaceController {
         userId: bigint
     ) {
         try {
+            // Get workspace info before deletion
+            const workspace = await this.service.getWorkspaceById(workspaceId, userId)
+
             await this.service.deleteWorkspace(workspaceId, userId)
+
+            // Log the action
+            await createAuditLog({
+                userId,
+                action: 'DELETE',
+                entity: 'WORKSPACE',
+                entityId: workspaceId,
+                workspaceId,
+                status: 'SUCCESS',
+                metadata: {
+                    name: workspace.name,
+                    description: workspace.description,
+                },
+            })
 
             return NextResponse.json(
                 successResponse({
@@ -105,6 +187,19 @@ export class WorkspaceController {
                 })
             )
         } catch (error) {
+            // Log failure
+            if (error instanceof Error) {
+                await createAuditLog({
+                    userId,
+                    action: 'DELETE',
+                    entity: 'WORKSPACE',
+                    entityId: workspaceId,
+                    workspaceId,
+                    status: 'FAILURE',
+                    errorMessage: error.message,
+                })
+            }
+
             const authError = handleAuthError(error)
             return NextResponse.json(
                 errorResponse(authError.message, authError.statusCode),

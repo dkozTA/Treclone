@@ -1,106 +1,120 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useParams } from 'next/navigation';
+import { useBoards } from '@/hooks/boards';
+import { BoardCard } from './_components/board-card';
+import { CreateBoardModal } from './_components/create-board-modal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Trash2 } from 'lucide-react';
-
-interface Board {
-  readonly id: string;
-  readonly title: string;
-  readonly description: string;
-  readonly lists: number;
-  readonly cards: number;
-}
+import { Skeleton } from '@/components/ui/skeleton';
+import { Plus, AlertCircle } from 'lucide-react';
 
 export default function BoardsPage() {
-  const [boards, setBoards] = useState<Board[]>([]);
+  const params = useParams();
+  const workspaceId = params.workspaceId as string;
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setBoards([
-        {
-          id: '1',
-          title: 'Q2 Planning',
-          description: 'Quarterly roadmap',
-          lists: 5,
-          cards: 23,
-        },
-        {
-          id: '2',
-          title: 'UI Components',
-          description: 'Design library',
-          lists: 3,
-          cards: 15,
-        },
-        {
-          id: '3',
-          title: 'Marketing Sprint',
-          description: 'Campaign tasks',
-          lists: 4,
-          cards: 18,
-        },
-      ]);
-    }, 1000);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
-    return () => clearTimeout(timer);
-  }, []);
+  // Query
+  const { data: boardsData, isLoading, error } = useBoards(workspaceId);
+
+  const boards = boardsData?.boards || [];
+
+  if (isLoading) {
+    return (
+      <main className="space-y-gap-lg">
+        {/* Header Skeleton */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-gap-sm flex-1">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-80" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+
+        {/* Grid Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gap-lg">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="pt-gap-lg space-y-gap-md">
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-9 w-9" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="space-y-gap-lg">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-headline-lg font-heading text-ink mb-gap-sm">
-            My Boards
-          </h1>
+        <div className="space-y-gap-sm">
+          <h1 className="text-headline-lg font-heading text-ink">My Boards</h1>
           <p className="text-body text-ink-muted">
             Manage and organize your tasks across different boards
           </p>
         </div>
-        <Button variant="default">
+        <Button variant="default" onClick={() => setShowCreateModal(true)}>
           <Plus className="h-4 w-4 mr-gap-sm" />
           Create Board
         </Button>
       </div>
 
+      {/* Error State */}
+      {error && (
+        <Card className="border-destructive bg-destructive/5">
+          <CardContent className="pt-gap-lg flex gap-gap-md">
+            <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0" />
+            <div>
+              <p className="text-destructive text-body font-medium">Error</p>
+              <p className="text-destructive text-label-sm">{error.message}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Boards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gap-lg">
-        {boards.length > 0 ? (
-          boards.map((board) => (
-            <Card
+      {boards.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gap-lg">
+          {boards.map((board) => (
+            <BoardCard
               key={board.id}
-              className="hover:shadow-md transition-shadow cursor-pointer"
-            >
-              <CardContent className="pt-gap-lg">
-                <a href={`/boards/${board.id}`}>
-                  <h3 className="text-title-md font-heading text-ink mb-gap-sm">
-                    {board.title}
-                  </h3>
-                  <p className="text-body text-ink-muted mb-gap-lg">
-                    {board.description}
-                  </p>
-                  <div className="flex items-center justify-between text-label-sm text-ink-muted">
-                    <span>{board.lists} Lists</span>
-                    <span>{board.cards} Cards</span>
-                  </div>
-                </a>
-                <button className="mt-gap-md text-destructive hover:bg-destructive/5 p-gap-sm rounded-sm">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <Card>
-            <CardContent className="pt-gap-lg text-center py-gap-xl">
-              <p className="text-body text-ink-muted">
-                Create a new board to get started
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+              workspaceId={workspaceId}
+              board={board}
+              onDeleteSuccess={() => {
+                // Card will automatically update via query invalidation
+              }}
+            />
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="pt-gap-lg text-center py-gap-xl space-y-gap-md">
+            <p className="text-body text-ink-muted">
+              No boards yet. Create your first board to get started.
+            </p>
+            <Button variant="outline" onClick={() => setShowCreateModal(true)}>
+              <Plus className="h-4 w-4 mr-gap-sm" />
+              Create Board
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Create Board Modal */}
+      {showCreateModal && (
+        <CreateBoardModal
+          workspaceId={workspaceId}
+          onSuccess={() => setShowCreateModal(false)}
+          onCancel={() => setShowCreateModal(false)}
+        />
+      )}
     </main>
   );
 }

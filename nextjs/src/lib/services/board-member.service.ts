@@ -1,7 +1,7 @@
 import { BoardMemberRepository } from '@/lib/repositories/board-member.repository'
 import { addMemberSchema, removeMemberSchema } from '@/lib/validation/members'
 import { AuthError, AuthErrorCode } from '@/lib/utils/error-handler'
-import prisma from '@/lib/prisma'
+import prisma from '@/lib/db/prisma'
 
 export class BoardMemberService {
     private readonly repository = new BoardMemberRepository()

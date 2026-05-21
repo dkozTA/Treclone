@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma'
+import prisma from '@/lib/db/prisma'
 
 export class ListRepository {
     async getListsByBoardId(boardId: bigint) {

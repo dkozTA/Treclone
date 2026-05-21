@@ -67,3 +67,8 @@ export type BoardTemplate = Prisma.BoardTemplateModel
  * 
  */
 export type TemplateList = Prisma.TemplateListModel
+/**
+ * Model AuditLog
+ * 
+ */
+export type AuditLog = Prisma.AuditLogModel

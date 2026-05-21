@@ -2,7 +2,7 @@ import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Slot } from 'radix-ui';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/cn';
 
 const badgeVariants = cva(
   'group/badge inline-flex w-fit shrink-0 items-center justify-center gap-gap-sm rounded-sm px-gap-sm py-gap-xs text-label-sm font-semibold uppercase transition-colors focus-visible:ring-2 focus-visible:ring-ring',

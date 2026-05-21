@@ -1,7 +1,7 @@
 import { ListRepository } from '@/lib/repositories/list.repository'
 import { createListSchema, updateListSchema } from '@/lib/validation/list'
 import { AuthError, AuthErrorCode } from '@/lib/utils/error-handler'
-import prisma from '@/lib/prisma'
+import prisma from '@/lib/db/prisma'
 
 export class ListService {
     private readonly repository = new ListRepository()

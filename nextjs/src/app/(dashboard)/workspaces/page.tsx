@@ -22,13 +22,14 @@ export default function WorkspacesPage() {
   const createMutation = useCreateWorkspace();
 
   // Transform API data to display format
-  const workspaces: DisplayWorkspace[] = data?.workspaces?.map((ws: any) => ({
-    id: ws.id,
-    name: ws.name,
-    description: ws.description || '',
-    membersCount: ws._count?.members || 0,
-    boardsCount: ws._count?.boards || 0,
-  })) || [];
+  const workspaces: DisplayWorkspace[] =
+    data?.workspaces?.map((ws: any) => ({
+      id: ws.id,
+      name: ws.name,
+      description: ws.description || '',
+      membersCount: ws._count?.members || 0,
+      boardsCount: ws._count?.boards || 0,
+    })) || [];
 
   const handleCreate = (formData: { name: string; description: string }) => {
     createMutation.mutate(formData, {
@@ -68,7 +69,7 @@ export default function WorkspacesPage() {
       {/* Loading State */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gap-lg">
-          {[...Array(3)].map((_, i) => (
+          {[new Array(3)].map((_, i) => (
             <Card key={i} className="hover:shadow-md transition-shadow">
               <CardContent className="pt-gap-lg space-y-gap-md">
                 <Skeleton className="h-6 w-32" />
@@ -118,7 +119,12 @@ export default function WorkspacesPage() {
 
                   {/* Actions */}
                   <div className="flex gap-gap-sm pt-gap-md border-t border-hairline-ghost">
-                    <Button asChild variant="ghost" size="sm" className="flex-1">
+                    <Button
+                      asChild
+                      variant="ghost"
+                      size="sm"
+                      className="flex-1"
+                    >
                       <a href={`/workspaces/${workspace.id}`}>Open</a>
                     </Button>
                     <Button asChild variant="ghost" size="icon-sm">
@@ -227,9 +233,9 @@ function CreateWorkspaceModal({
           </div>
 
           <div className="flex gap-gap-md pt-gap-md">
-            <Button 
-              variant="outline" 
-              className="flex-1" 
+            <Button
+              variant="outline"
+              className="flex-1"
               onClick={onClose}
               disabled={isLoading}
             >

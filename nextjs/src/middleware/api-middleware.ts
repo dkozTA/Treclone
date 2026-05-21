@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { rateLimit, getClientIp, rateLimitHeaders } from '@/lib/rate-limit'
-import { createAuditLog, AuditAction, AuditEntity } from '@/lib/audit-log'
-import { captureException, ErrorCode, generateCorrelationId } from '@/lib/error-tracking'
-import { verifyTokenFromCookie } from '@/lib/auth-utils'
+import { rateLimit, getClientIp, rateLimitHeaders } from '@/lib/utils/rate-limit'
+import { createAuditLog, AuditAction, AuditEntity } from '@/lib/types/audit-log'
+import { captureException, ErrorCode, generateCorrelationId } from '@/lib/utils/error-tracking'
+import { verifyTokenFromCookie } from '@/lib/utils/auth'
 
 export interface ApiMiddlewareContext {
     correlationId: string

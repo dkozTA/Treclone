@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { ProfileController } from '@/lib/controllers/profile.controller'
-import { verifyTokenFromCookie } from '@/lib/auth-utils'
+import { verifyTokenFromCookie } from '@/lib/utils/auth'
 
 const controller = new ProfileController()
 

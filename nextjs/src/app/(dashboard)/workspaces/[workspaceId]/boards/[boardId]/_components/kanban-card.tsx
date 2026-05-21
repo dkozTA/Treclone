@@ -1,7 +1,7 @@
 'use client';
 
 import { Draggable } from '@hello-pangea/dnd';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/cn';
 
 interface Card {
   id: string;

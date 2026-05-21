@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode, useEffect, useState, useMemo } from 'react';
-import { AuthContext, AuthContextType, User } from '@/lib/auth-context';
+import { AuthContext, AuthContextType, User } from '@/contexts/auth-context';
 
 export function AuthProvider({ children }: { readonly children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
