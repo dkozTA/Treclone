@@ -1,29 +1,43 @@
-import { NextRequest } from 'next/server'
-import { verifyTokenFromCookie } from '@/lib/utils/auth'
-import { errorResponse, successResponse } from '@/lib/utils/api-utils'
-import prisma from '@/lib/db/prisma'
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyTokenFromCookie } from '@/lib/utils/auth';
+import { errorResponse, successResponse } from '@/lib/utils/api-utils';
+import prisma from '@/lib/db/prisma';
 
 interface ActivityDisplay {
-    id: string
-    user: string
-    action: string
-    target: string
-    timestamp: string
+    id: string;
+    user: string;
+    action: string;
+    target: string;
+    timestamp: string;
+}
+
+function parseMetadata(metadata: unknown): Record<string, unknown> | null {
+    if (!metadata) return null;
+    if (typeof metadata === 'object') return metadata as Record<string, unknown>;
+    if (typeof metadata === 'string') {
+        try {
+            return JSON.parse(metadata) as Record<string, unknown>;
+        } catch {
+            return null;
+        }
+    }
+    return null;
 }
 
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ workspaceId: string }> }
 ) {
-    const { workspaceId } = await params
-    const { valid, userId } = verifyTokenFromCookie(request)
+    const { workspaceId } = await params;
+    const { valid, userId } = verifyTokenFromCookie(request);
 
     if (!valid || !userId) {
-        return errorResponse('Unauthorized', 401)
+        return NextResponse.json(errorResponse('Unauthorized', 401), {
+            status: 401,
+        });
     }
 
     try {
-        // Verify user is member of workspace
         const member = await prisma.workspaceMember.findUnique({
             where: {
                 userId_workspaceId: {
@@ -31,13 +45,14 @@ export async function GET(
                     workspaceId: BigInt(workspaceId),
                 },
             },
-        })
+        });
 
         if (!member) {
-            return errorResponse('Access denied', 403)
+            return NextResponse.json(errorResponse('Access denied', 403), {
+                status: 403,
+            });
         }
 
-        // Fetch recent audit logs from workspace
         const auditLogs = await prisma.auditLog.findMany({
             where: {
                 workspaceId: BigInt(workspaceId),
@@ -54,35 +69,42 @@ export async function GET(
             orderBy: {
                 createdAt: 'desc',
             },
-            take: 50, // Limit to last 50 activities
-        })
+            take: 50,
+        });
 
-        // Transform audit logs to activity display format
         const activities: ActivityDisplay[] = auditLogs.map((log) => {
-            let action = ''
-            let target = ''
+            let action = '';
+            let target = '';
+            const metadata = parseMetadata(log.metadata);
 
-            // Format action and target based on entity type
             switch (log.entity) {
                 case 'BOARD':
-                    action = `${log.action.toLowerCase()}ed board`
-                    target = log.metadata ? JSON.parse(log.metadata).title || 'Unknown' : 'Unknown'
-                    break
+                    action = `${log.action.toLowerCase()}ed board`;
+                    target =
+                        (metadata?.title as string | undefined) ||
+                        'Unknown';
+                    break;
                 case 'CARD':
-                    action = `${log.action.toLowerCase()}ed card`
-                    target = log.metadata ? JSON.parse(log.metadata).title || 'Unknown' : 'Unknown'
-                    break
+                    action = `${log.action.toLowerCase()}ed card`;
+                    target =
+                        (metadata?.title as string | undefined) ||
+                        'Unknown';
+                    break;
                 case 'LIST':
-                    action = `${log.action.toLowerCase()}ed list`
-                    target = log.metadata ? JSON.parse(log.metadata).title || 'Unknown' : 'Unknown'
-                    break
+                    action = `${log.action.toLowerCase()}ed list`;
+                    target =
+                        (metadata?.title as string | undefined) ||
+                        'Unknown';
+                    break;
                 case 'MEMBER':
-                    action = `${log.action.toLowerCase()} member`
-                    target = log.metadata ? JSON.parse(log.metadata).email || 'Unknown' : 'Unknown'
-                    break
+                    action = `${log.action.toLowerCase()} member`;
+                    target =
+                        (metadata?.email as string | undefined) ||
+                        'Unknown';
+                    break;
                 default:
-                    action = log.action.toLowerCase()
-                    target = 'Resource'
+                    action = log.action.toLowerCase();
+                    target = 'Resource';
             }
 
             return {
@@ -91,15 +113,21 @@ export async function GET(
                 action,
                 target,
                 timestamp: log.createdAt.toISOString(),
-            }
-        })
+            };
+        });
 
-        return successResponse({
-            message: 'Activities fetched successfully',
-            activities,
-        })
+        return NextResponse.json(
+            successResponse({
+                message: 'Activities fetched successfully',
+                activities,
+            }),
+            { status: 200 }
+        );
     } catch (error) {
-        console.error('Failed to fetch activities:', error)
-        return errorResponse('Failed to fetch activities', 500)
+        console.error('Failed to fetch activities:', error);
+        return NextResponse.json(
+            errorResponse('Failed to fetch activities', 500),
+            { status: 500 }
+        );
     }
 }

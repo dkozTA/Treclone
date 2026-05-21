@@ -8,7 +8,7 @@ import {
   ChevronDown,
   LayoutGrid,
   Search,
-  Settings2,
+  Settings,
   Star,
   Activity,
   Users,
@@ -198,7 +198,7 @@ export default function DashboardLayout({
           <div className="mt-auto border-t border-hairline-ghost p-gap-md">
             <Button asChild variant="ghost" className="w-full justify-start">
               <Link href="/settings">
-                <Settings2 className="mr-gap-sm h-4 w-4" />
+                <Settings className="mr-gap-sm h-4 w-4" />
                 Settings
               </Link>
             </Button>

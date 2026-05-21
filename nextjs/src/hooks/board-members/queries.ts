@@ -1,36 +1,33 @@
-'use client'
+'use client';
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query';
 
 interface BoardMember {
-    id: string
-    userId: string
-    boardId: string
-    role: 'admin' | 'editor' | 'viewer'
+    id: string;
+    userId: string;
+    boardId: string;
+    role: 'admin' | 'editor' | 'viewer';
     user: {
-        id: string
-        email: string
-        name: string
-    }
-    createdAt: string
-    updatedAt: string
+        id: string;
+        email: string;
+        name: string;
+    };
+    createdAt: string;
+    updatedAt: string;
 }
 
 interface FetchBoardMembersResponse {
-    success: boolean
-    data: BoardMember[]
+    success: boolean;
+    data: BoardMember[];
 }
 
 interface FetchBoardMemberResponse {
-    success: boolean
-    data: BoardMember
+    success: boolean;
+    data: BoardMember;
 }
 
 // Fetch all board members
-export function useBoardMembers(
-    workspaceId: string,
-    boardId: string
-) {
+export function useBoardMembers(workspaceId: string, boardId: string) {
     return useQuery<FetchBoardMembersResponse, Error>({
         queryKey: ['board-members', workspaceId, boardId],
         queryFn: async () => {
@@ -43,17 +40,21 @@ export function useBoardMembers(
                     },
                     credentials: 'include',
                 }
-            )
+            );
+
+            const json = await response.json();
 
             if (!response.ok) {
-                const error = await response.json()
-                throw new Error(error.message || 'Failed to fetch board members')
+                throw new Error(json.error || json.message || 'Failed to fetch board members');
             }
 
-            return response.json()
+            return {
+                success: !!json.success,
+                data: Array.isArray(json?.data?.members) ? json.data.members : [],
+            };
         },
         enabled: !!workspaceId && !!boardId,
-    })
+    });
 }
 
 // Fetch single board member (if needed)
@@ -74,15 +75,19 @@ export function useBoardMember(
                     },
                     credentials: 'include',
                 }
-            )
+            );
+
+            const json = await response.json();
 
             if (!response.ok) {
-                const error = await response.json()
-                throw new Error(error.message || 'Failed to fetch board member')
+                throw new Error(json.error || json.message || 'Failed to fetch board member');
             }
 
-            return response.json()
+            return {
+                success: !!json.success,
+                data: json?.data?.member ?? json?.data,
+            };
         },
         enabled: !!workspaceId && !!boardId && !!memberId,
-    })
+    });
 }

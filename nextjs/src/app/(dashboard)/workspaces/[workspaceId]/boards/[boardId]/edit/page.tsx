@@ -31,8 +31,8 @@ export default function BoardEditPage() {
   useEffect(() => {
     if (board) {
       setFormData({
-        title: board.title,
-        description: board.description || '',
+        title: board.title ?? '',
+        description: board.description ?? '',
       });
     }
   }, [board]);

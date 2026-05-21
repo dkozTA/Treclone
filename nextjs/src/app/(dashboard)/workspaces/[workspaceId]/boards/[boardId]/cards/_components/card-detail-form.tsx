@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,16 @@ interface CardDetailFormProps {
   onCancel?: () => void;
 }
 
+function toBigIntOrUndefined(value?: string) {
+  if (!value) return undefined;
+
+  try {
+    return BigInt(value);
+  } catch {
+    return undefined;
+  }
+}
+
 export function CardDetailForm({
   workspaceId,
   boardId,
@@ -37,9 +47,7 @@ export function CardDetailForm({
   onCancel,
 }: Readonly<CardDetailFormProps>) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [status, setStatus] = useState('todo');
 
-  // Hooks
   const { data: membersData, isLoading: membersLoading } = useBoardMembers(
     workspaceId,
     boardId
@@ -63,19 +71,28 @@ export function CardDetailForm({
     formState: { errors },
     setValue,
     watch,
+    reset,
   } = useForm<UpdateCardInput>({
     resolver: zodResolver(updateCardSchema),
     defaultValues: {
       title: card.title,
       description: card.description || '',
-      assigneeUserId: card.assigneeId ? BigInt(card.assigneeId) : undefined,
+      assigneeUserId: toBigIntOrUndefined(card.assigneeId),
     },
   });
 
-  const assigneeId = watch('assigneeUserId');
-  const members = membersData?.data || [];
+  useEffect(() => {
+    reset({
+      title: card.title,
+      description: card.description || '',
+      assigneeUserId: toBigIntOrUndefined(card.assigneeId),
+    });
+    setShowDeleteConfirm(false);
+  }, [card, reset]);
 
-  const onSubmit = async (formData: UpdateCardInput) => {
+  const assigneeId = watch('assigneeUserId');
+  const members = Array.isArray(membersData?.data) ? membersData.data : [];
+  const onSubmit = (formData: UpdateCardInput) => {
     updateMutation.mutate(formData, {
       onSuccess: () => {
         onSuccess?.();
@@ -95,7 +112,6 @@ export function CardDetailForm({
 
   return (
     <div className="space-y-gap-lg">
-      {/* Error State */}
       {(updateMutation.error || deleteMutation.error) && (
         <Card className="border-destructive bg-destructive/5">
           <CardContent className="pt-gap-lg flex gap-gap-md">
@@ -110,14 +126,12 @@ export function CardDetailForm({
         </Card>
       )}
 
-      {/* Card Details */}
       <Card>
         <CardHeader>
           <CardTitle>{card.title}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-gap-lg">
-            {/* Title */}
             <div className="space-y-gap-sm">
               <Label htmlFor="title">Card Title</Label>
               <Input
@@ -133,7 +147,6 @@ export function CardDetailForm({
               )}
             </div>
 
-            {/* Description */}
             <div className="space-y-gap-sm">
               <Label htmlFor="description">Description</Label>
               <textarea
@@ -151,23 +164,6 @@ export function CardDetailForm({
               )}
             </div>
 
-            {/* Status */}
-            <div className="space-y-gap-sm">
-              <Label htmlFor="status">Status</Label>
-              <select
-                id="status"
-                className="w-full px-gap-md py-gap-sm border border-hairline-ghost rounded-sm text-body font-body disabled:opacity-50"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                disabled={isLoading}
-              >
-                <option value="todo">To Do</option>
-                <option value="in-progress">In Progress</option>
-                <option value="done">Done</option>
-              </select>
-            </div>
-
-            {/* Assignee */}
             <div className="space-y-gap-sm">
               <Label htmlFor="assignee">Assignee</Label>
               {membersLoading ? (
@@ -196,7 +192,6 @@ export function CardDetailForm({
               )}
             </div>
 
-            {/* Form Actions */}
             <div className="flex gap-gap-md pt-gap-md">
               <Button
                 type="submit"
@@ -222,7 +217,6 @@ export function CardDetailForm({
         </CardContent>
       </Card>
 
-      {/* Danger Zone */}
       {!showDeleteConfirm && (
         <Card className="border-destructive/20">
           <CardHeader>
@@ -244,7 +238,6 @@ export function CardDetailForm({
         </Card>
       )}
 
-      {/* Delete Confirmation */}
       {showDeleteConfirm && (
         <Card className="border-destructive">
           <CardHeader>

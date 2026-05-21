@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Settings, Trash2, Users } from 'lucide-react';
+import { Plus, Settings, Trash, Users } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 
 interface DisplayWorkspace {
@@ -44,6 +44,8 @@ export default function WorkspacesPage() {
     });
   };
 
+  const skeletonIds = ['skeleton-1', 'skeleton-2', 'skeleton-3'];
+
   return (
     <main className="space-y-gap-lg">
       {/* Header */}
@@ -74,8 +76,8 @@ export default function WorkspacesPage() {
       {/* Loading State */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gap-lg">
-          {[new Array(3)].map((_, i) => (
-            <Card key={i} className="hover:shadow-md transition-shadow">
+          {skeletonIds.map((id) => (
+            <Card key={id} className="hover:shadow-md transition-shadow">
               <CardContent className="pt-gap-lg space-y-gap-md">
                 <Skeleton className="h-6 w-32" />
                 <Skeleton className="h-4 w-full" />
@@ -195,7 +197,7 @@ function DeleteWorkspaceButton({
         disabled={deleteWorkspaceMutation.isPending}
         onClick={() => setShowConfirm(true)}
       >
-        <Trash2 className="w-4 h-4" />
+        <Trash className="w-4 h-4" />
       </Button>
       <ConfirmDialog
         open={showConfirm}
