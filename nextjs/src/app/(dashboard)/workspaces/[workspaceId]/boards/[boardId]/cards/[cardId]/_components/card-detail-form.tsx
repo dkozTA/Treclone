@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUpdateCard, useDeleteCard } from '@/hooks/cards';
-import { useBoardMembers } from '@/hooks/members';
+import { useBoardMembers } from '@/hooks/board-members';
 import { updateCardSchema, type UpdateCardInput } from '@/lib/validation/card';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
@@ -35,7 +35,7 @@ export function CardDetailForm({
   card,
   onSuccess,
   onCancel,
-}: CardDetailFormProps) {
+}: Readonly<CardDetailFormProps>) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [status, setStatus] = useState('todo');
 

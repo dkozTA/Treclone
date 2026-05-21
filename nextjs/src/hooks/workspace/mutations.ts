@@ -14,18 +14,6 @@ interface WorkspaceResponse {
     }
 }
 
-interface WorkspaceSettingsResponse {
-    success: boolean
-    data: {
-        id: string
-        workspaceId: string
-        defaultRole: string
-        allowPublicBoards: boolean
-        createdAt: string
-        updatedAt: string
-    }
-}
-
 interface CreateWorkspaceInput {
     name: string
     description?: string
@@ -34,11 +22,6 @@ interface CreateWorkspaceInput {
 interface UpdateWorkspaceInput {
     name?: string
     description?: string
-}
-
-interface UpdateWorkspaceSettingsInput {
-    defaultRole?: string
-    allowPublicBoards?: boolean
 }
 
 // Create workspace
@@ -121,79 +104,6 @@ export function useDeleteWorkspace(workspaceId: string) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['workspaces'] })
-        },
-    })
-}
-
-// Update workspace settings
-export function useUpdateWorkspaceSettings(workspaceId: string) {
-    const queryClient = useQueryClient()
-
-    return useMutation<
-        WorkspaceSettingsResponse,
-        Error,
-        UpdateWorkspaceSettingsInput
-    >({
-        mutationFn: async (data) => {
-            const response = await fetch(
-                `/api/workspaces/${workspaceId}/settings`,
-                {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify(data),
-                }
-            )
-
-            if (!response.ok) {
-                const error = await response.json()
-                throw new Error(
-                    error.message || 'Failed to update workspace settings'
-                )
-            }
-
-            return response.json()
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ['workspace-settings', workspaceId],
-            })
-        },
-    })
-}
-
-// Delete workspace settings
-export function useDeleteWorkspaceSettings(workspaceId: string) {
-    const queryClient = useQueryClient()
-
-    return useMutation({
-        mutationFn: async () => {
-            const response = await fetch(
-                `/api/workspaces/${workspaceId}/settings`,
-                {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                }
-            )
-
-            if (!response.ok) {
-                const error = await response.json()
-                throw new Error(
-                    error.message || 'Failed to delete workspace settings'
-                )
-            }
-
-            return response.json()
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ['workspace-settings', workspaceId],
-            })
         },
     })
 }

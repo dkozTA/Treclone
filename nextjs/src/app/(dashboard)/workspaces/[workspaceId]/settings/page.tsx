@@ -14,8 +14,8 @@ import {
 import {
   useWorkspaceSettings,
   useUpdateWorkspaceSettings,
-  useDeleteWorkspace,
-} from '@/hooks/workspace';
+} from '@/hooks/workspace-settings';
+import { useDeleteWorkspace } from '@/hooks/workspace';
 import {
   updateWorkspaceSettingsSchema,
   type UpdateWorkspaceSettingsInput,
@@ -39,17 +39,10 @@ export default function WorkspaceSettingsPage({
   const deleteMutation = useDeleteWorkspace(workspaceId);
 
   // React Hook Form
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    watch,
-  } = useForm<UpdateWorkspaceSettingsInput>({
-    resolver: zodResolver(updateWorkspaceSettingsSchema),
-  });
-
-  const visibility = watch('visibility');
+  const { register, handleSubmit, setValue } =
+    useForm<UpdateWorkspaceSettingsInput>({
+      resolver: zodResolver(updateWorkspaceSettingsSchema),
+    });
 
   // Load initial data
   useEffect(() => {

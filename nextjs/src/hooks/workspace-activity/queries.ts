@@ -18,9 +18,9 @@ interface FetchActivitiesResponse {
     }
 }
 
-export function useActivities(workspaceId: string) {
+export function useWorkspaceActivities(workspaceId: string) {
     return useQuery<FetchActivitiesResponse['data'], Error>({
-        queryKey: ['activities', workspaceId],
+        queryKey: ['workspace-activities', workspaceId],
         queryFn: async () => {
             const response = await fetch(
                 `/api/workspaces/${workspaceId}/activity`,
