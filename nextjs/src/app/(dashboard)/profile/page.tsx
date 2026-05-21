@@ -76,7 +76,7 @@ export default function ProfilePage() {
             </p>
           </div>
           <Button
-            onClick={() => window.location.reload()}
+            onClick={() => globalThis.location.reload()}
             size="sm"
             variant="default"
           >

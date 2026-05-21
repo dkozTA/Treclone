@@ -8,3 +8,4 @@ export * from './boards'
 export * from './board-members'
 export * from './lists'
 export * from './cards'
+export * from './preferences';

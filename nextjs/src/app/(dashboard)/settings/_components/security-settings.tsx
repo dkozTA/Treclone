@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useChangePassword } from '@/hooks/profile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,34 +14,37 @@ import {
 } from '@/components/ui/card';
 
 export function SecuritySettings() {
-  const [isSaving, setIsSaving] = useState(false);
+  const changePasswordMutation = useChangePassword();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleUpdatePassword = async () => {
+  const handleUpdatePassword = () => {
     if (newPassword !== confirmPassword) {
       alert('Passwords do not match');
       return;
     }
 
-    setIsSaving(true);
-    try {
-      const response = await fetch('/api/profile/password', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPassword, newPassword }),
-      });
-
-      if (response.ok) {
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmPassword('');
-        alert('Password updated successfully');
+    changePasswordMutation.mutate(
+      {
+        currentPassword,
+        newPassword,
+        passwordConfirmation: confirmPassword,
+      },
+      {
+        onSuccess: () => {
+          setCurrentPassword('');
+          setNewPassword('');
+          setConfirmPassword('');
+          alert('Password updated successfully');
+        },
+        onError: (error) => {
+          alert(
+            error instanceof Error ? error.message : 'Failed to update password'
+          );
+        },
       }
-    } finally {
-      setIsSaving(false);
-    }
+    );
   };
 
   return (
@@ -60,6 +64,7 @@ export function SecuritySettings() {
             placeholder="••••••••"
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
+            disabled={changePasswordMutation.isPending}
           />
         </div>
         <div className="space-y-gap-sm">
@@ -70,6 +75,7 @@ export function SecuritySettings() {
             placeholder="••••••••"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
+            disabled={changePasswordMutation.isPending}
           />
         </div>
         <div className="space-y-gap-sm">
@@ -80,14 +86,15 @@ export function SecuritySettings() {
             placeholder="••••••••"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+            disabled={changePasswordMutation.isPending}
           />
         </div>
         <Button
           onClick={handleUpdatePassword}
-          disabled={isSaving}
+          disabled={changePasswordMutation.isPending}
           className="mt-gap-md"
         >
-          {isSaving ? 'Updating...' : 'Update Password'}
+          {changePasswordMutation.isPending ? 'Updating...' : 'Update Password'}
         </Button>
       </CardContent>
     </Card>

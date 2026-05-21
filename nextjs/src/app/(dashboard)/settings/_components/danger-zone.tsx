@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useDeleteAccount } from '@/hooks/profile';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -14,6 +15,7 @@ import {
 export function DangerZone() {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
+  const deleteAccountMutation = useDeleteAccount();
 
   const handleDeleteAccount = async () => {
     if (!confirm('Are you absolutely sure? This cannot be undone.')) {
@@ -21,19 +23,21 @@ export function DangerZone() {
     }
 
     setIsDeleting(true);
-    try {
-      const response = await fetch('/api/profile', {
-        method: 'DELETE',
-      });
 
-      if (response.ok) {
-        // Logout and redirect
+    deleteAccountMutation.mutate(undefined, {
+      onSuccess: async () => {
         await fetch('/api/auth/logout', { method: 'POST' });
         router.push('/login');
-      }
-    } finally {
-      setIsDeleting(false);
-    }
+      },
+      onError: (error) => {
+        alert(
+          error instanceof Error ? error.message : 'Failed to delete account'
+        );
+      },
+      onSettled: () => {
+        setIsDeleting(false);
+      },
+    });
   };
 
   return (
@@ -53,9 +57,11 @@ export function DangerZone() {
             variant="destructive"
             className="mt-gap-sm"
             onClick={handleDeleteAccount}
-            disabled={isDeleting}
+            disabled={isDeleting || deleteAccountMutation.isPending}
           >
-            {isDeleting ? 'Deleting...' : 'Delete Account'}
+            {isDeleting || deleteAccountMutation.isPending
+              ? 'Deleting...'
+              : 'Delete Account'}
           </Button>
         </div>
       </CardContent>

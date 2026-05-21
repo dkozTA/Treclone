@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -8,6 +8,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  usePreferencesSettings,
+  useUpdatePreferences,
+} from '@/hooks/preferences';
 
 interface Preferences {
   emailNotifications: boolean;
@@ -15,38 +19,24 @@ interface Preferences {
 }
 
 export function PreferencesSettings() {
-  const [preferences, setPreferences] = useState<Preferences>({
+  const { data: preferences, isLoading } = usePreferencesSettings();
+  const updatePreference = useUpdatePreferences();
+
+  const [localPreferences, setLocalPreferences] = useState<Preferences>({
     emailNotifications: true,
     darkMode: false,
   });
 
   useEffect(() => {
-    // Fetch preferences from API
-    const fetchPreferences = async () => {
-      try {
-        const response = await fetch('/api/settings/preferences');
-        if (response.ok) {
-          const data = await response.json();
-          setPreferences(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch preferences:', error);
-      }
-    };
-
-    fetchPreferences();
-  }, []);
+    if (preferences) {
+      setLocalPreferences(preferences);
+    }
+  }, [preferences]);
 
   const handleToggle = async (key: keyof Preferences) => {
-    const newValue = !preferences[key];
-    setPreferences({ ...preferences, [key]: newValue });
-
-    // Save to API
-    await fetch('/api/settings/preferences', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ [key]: newValue }),
-    });
+    const newValue = !localPreferences[key];
+    setLocalPreferences({ ...localPreferences, [key]: newValue });
+    updatePreference.mutate({ [key]: newValue });
   };
 
   return (
@@ -68,8 +58,9 @@ export function PreferencesSettings() {
           <input
             type="checkbox"
             className="w-4 h-4"
-            checked={preferences.emailNotifications}
+            checked={localPreferences.emailNotifications}
             onChange={() => handleToggle('emailNotifications')}
+            disabled={isLoading || updatePreference.isPending}
           />
         </div>
         <div className="flex items-center justify-between py-gap-sm border-t border-hairline-ghost pt-gap-md">
@@ -82,8 +73,9 @@ export function PreferencesSettings() {
           <input
             type="checkbox"
             className="w-4 h-4"
-            checked={preferences.darkMode}
+            checked={localPreferences.darkMode}
             onChange={() => handleToggle('darkMode')}
+            disabled={isLoading || updatePreference.isPending}
           />
         </div>
       </CardContent>

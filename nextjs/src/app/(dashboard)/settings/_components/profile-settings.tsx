@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useProfile } from '@/hooks/profile';
+import { useEffect, useState } from 'react';
+import { useProfile, useUpdateProfile } from '@/hooks/profile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,22 +15,21 @@ import {
 
 export function ProfileSettings() {
   const { data: profileData, isLoading } = useProfile();
-  const [isSaving, setIsSaving] = useState(false);
-  const [fullName, setFullName] = useState(profileData?.user?.fullName || '');
-  const [email, setEmail] = useState(profileData?.user?.email || '');
+  const updateProfileMutation = useUpdateProfile();
+  const [fullName, setFullName] = useState('');
+
+  useEffect(() => {
+    if (profileData?.user?.fullName) {
+      setFullName(profileData.user.fullName);
+    }
+  }, [profileData?.user?.fullName]);
 
   const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      // Call update profile API
-      await fetch('/api/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName, email }),
-      });
-    } finally {
-      setIsSaving(false);
-    }
+    if (!fullName.trim()) return;
+
+    updateProfileMutation.mutate({
+      fullName: fullName.trim(),
+    });
   };
 
   return (
@@ -48,24 +47,28 @@ export function ProfileSettings() {
             placeholder="John Doe"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
+            disabled={isLoading || updateProfileMutation.isPending}
           />
         </div>
+
         <div className="space-y-gap-sm">
           <Label htmlFor="email">Email Address</Label>
           <Input
             id="email"
             type="email"
-            placeholder="john@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={profileData?.user?.email || ''}
+            disabled
           />
         </div>
+
         <Button
           onClick={handleSave}
-          disabled={isSaving || isLoading}
+          disabled={
+            isLoading || updateProfileMutation.isPending || !fullName.trim()
+          }
           className="mt-gap-md"
         >
-          {isSaving ? 'Saving...' : 'Save Changes'}
+          {updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
         </Button>
       </CardContent>
     </Card>
