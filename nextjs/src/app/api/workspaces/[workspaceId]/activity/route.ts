@@ -38,7 +38,19 @@ export async function GET(
     }
 
     try {
-        const member = await prisma.workspaceMember.findUnique({
+        const workspace = await prisma.workspace.findUnique({
+            where: { id: BigInt(workspaceId) },
+            select: { ownerId: true },
+        });
+
+        if (!workspace) {
+            return NextResponse.json(errorResponse('Workspace not found', 404), {
+                status: 404,
+            });
+        }
+
+        const isOwner = workspace.ownerId === BigInt(userId);
+        const member = isOwner ? null : await prisma.workspaceMember.findUnique({
             where: {
                 userId_workspaceId: {
                     userId: BigInt(userId),
@@ -47,7 +59,7 @@ export async function GET(
             },
         });
 
-        if (!member) {
+        if (!isOwner && !member) {
             return NextResponse.json(errorResponse('Access denied', 403), {
                 status: 403,
             });
@@ -72,7 +84,7 @@ export async function GET(
             take: 50,
         });
 
-        const activities: ActivityDisplay[] = auditLogs.map((log) => {
+        const activities: ActivityDisplay[] = auditLogs.map((log: any) => {
             let action = '';
             let target = '';
             const metadata = parseMetadata(log.metadata);

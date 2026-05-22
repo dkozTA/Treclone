@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { successResponse, errorResponse } from '@/lib/utils/api-utils'
 import { AuthService } from '@/lib/services/auth.service'
+import { sendPasswordResetEmail } from '@/lib/services/email.service'
 import { handleAuthError } from '@/lib/utils/error-handler'
 
 export class AuthController {
@@ -197,6 +198,17 @@ export class AuthController {
         try {
             const body = await request.json()
             const result = await this.service.forgotPassword(body)
+
+            if (result.userFound && result.resetToken) {
+                try {
+                    await sendPasswordResetEmail({
+                        to: body.email,
+                        resetToken: result.resetToken,
+                    })
+                } catch (error) {
+                    console.error('Failed to send password reset email:', error)
+                }
+            }
 
             // Log if development (for testing)
             if (process.env.NODE_ENV === 'development' && result.userFound && result.resetToken) {
