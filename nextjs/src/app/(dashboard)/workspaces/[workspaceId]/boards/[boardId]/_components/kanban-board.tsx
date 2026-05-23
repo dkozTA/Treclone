@@ -291,6 +291,7 @@ export function KanbanBoard({
         actions={
           <Button
             variant="default"
+            className="w-full sm:w-auto"
             onClick={() => setShowAddListModal(true)}
             disabled={createListMutation.isPending}
           >

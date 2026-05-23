@@ -45,15 +45,15 @@ export default function MembersPage() {
         title="Team Members"
         description="Manage workspace members and permissions"
         actions={
-          <div className="flex flex-wrap items-center gap-gap-sm">
+          <div className="grid w-full gap-gap-sm sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_auto_auto]">
             <input
-              className="w-full rounded-sm border border-hairline-ghost px-gap-md py-gap-sm md:w-64"
+              className="w-full rounded-sm border border-hairline-ghost px-gap-md py-gap-sm"
               placeholder="member@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
             <select
-              className="rounded-sm border border-hairline-ghost px-gap-md py-gap-sm text-label-sm"
+              className="w-full rounded-sm border border-hairline-ghost px-gap-md py-gap-sm text-label-sm"
               value={role}
               onChange={(e) => setRole(e.target.value as 'member' | 'admin')}
             >
@@ -62,6 +62,7 @@ export default function MembersPage() {
             </select>
             <Button
               variant="default"
+              className="w-full lg:w-auto"
               onClick={handleAddMember}
               disabled={addMemberMutation.isPending}
             >
@@ -126,8 +127,8 @@ function MemberRow({
 
   return (
     <>
-      <div className="flex items-center justify-between p-gap-md bg-surface-1 rounded-sm">
-        <div>
+      <div className="flex flex-col gap-gap-md rounded-sm bg-surface-1 p-gap-md sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <p className="text-body text-ink font-medium">{member.user.name}</p>
           <p className="text-label-sm text-ink-muted">{member.user.email}</p>
           <p className="text-label-sm text-ink-muted capitalize">
@@ -135,9 +136,9 @@ function MemberRow({
           </p>
         </div>
 
-        <div className="flex gap-gap-sm">
+        <div className="flex flex-wrap gap-gap-sm sm:justify-end">
           <select
-            className="px-gap-md py-gap-sm border border-hairline-ghost rounded-sm text-label-sm"
+            className="w-full rounded-sm border border-hairline-ghost px-gap-md py-gap-sm text-label-sm sm:w-auto"
             defaultValue={member.role}
             disabled
           >
@@ -147,7 +148,7 @@ function MemberRow({
           </select>
 
           <button
-            className="text-destructive hover:bg-destructive/5 p-gap-sm rounded-sm"
+            className="rounded-sm p-gap-sm text-destructive hover:bg-destructive/5"
             onClick={() => setShowConfirm(true)}
             disabled={removeMutation.isPending || member.role === 'owner'}
             type="button"

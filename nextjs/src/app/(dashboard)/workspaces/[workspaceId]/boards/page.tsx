@@ -58,7 +58,11 @@ export default function BoardsPage() {
         title="My Boards"
         description="Manage and organize your tasks across different boards"
         actions={
-          <Button variant="default" onClick={() => setShowCreateModal(true)}>
+          <Button
+            variant="default"
+            className="w-full sm:w-auto"
+            onClick={() => setShowCreateModal(true)}
+          >
             <Plus className="h-4 w-4 mr-gap-sm" />
             Create Board
           </Button>

@@ -48,7 +48,9 @@ export function DashboardPageHeader({
       </div>
 
       {actions ? (
-        <div className="flex flex-wrap items-center gap-gap-sm">{actions}</div>
+        <div className="flex w-full flex-col gap-gap-sm sm:flex-row sm:flex-wrap sm:items-center md:w-auto md:justify-end">
+          {actions}
+        </div>
       ) : null}
     </header>
   );

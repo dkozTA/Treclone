@@ -66,6 +66,19 @@ export default function BoardMembersPage() {
         title="Board Members"
         description="Manage who can access this board"
         backHref={`/workspaces/${workspaceId}/boards/${boardId}`}
+        actions={
+          <div className="flex w-full flex-col gap-gap-sm sm:flex-row sm:items-center sm:justify-end">
+            <Button
+              variant="default"
+              onClick={handleAddMember}
+              disabled={!canSubmit}
+              className="w-full sm:w-auto"
+            >
+              <UserPlus className="mr-gap-sm h-4 w-4" />
+              {addMemberMutation.isPending ? 'Adding...' : 'Add Member'}
+            </Button>
+          </div>
+        }
       />
 
       {error && (
@@ -86,7 +99,7 @@ export default function BoardMembersPage() {
         </CardHeader>
 
         <CardContent className="space-y-gap-lg">
-          <div className="grid gap-gap-md md:grid-cols-[1fr_auto_auto]">
+          <div className="grid gap-gap-md md:grid-cols-[minmax(0,1fr)_auto]">
             <div className="space-y-gap-sm">
               <Label htmlFor="email">User Email</Label>
               <div className="flex gap-gap-sm">
@@ -136,17 +149,6 @@ export default function BoardMembersPage() {
                 <option value="admin">Admin</option>
               </select>
             </div>
-
-            <div className="flex items-end">
-              <Button
-                variant="default"
-                onClick={handleAddMember}
-                disabled={!canSubmit}
-              >
-                <UserPlus className="mr-gap-sm h-4 w-4" />
-                {addMemberMutation.isPending ? 'Adding...' : 'Add Member'}
-              </Button>
-            </div>
           </div>
 
           <div className="space-y-gap-md">
@@ -195,7 +197,7 @@ function BoardMemberRow({
 
   return (
     <>
-      <div className="flex items-center justify-between gap-gap-md rounded-sm bg-surface-1 p-gap-md">
+      <div className="flex flex-col gap-gap-md rounded-sm bg-surface-1 p-gap-md sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="text-body font-medium text-ink">
             {member.user.fullName || member.user.email}
@@ -206,7 +208,7 @@ function BoardMemberRow({
           </p>
         </div>
 
-        <div className="flex items-center gap-gap-sm">
+        <div className="flex flex-wrap items-center gap-gap-sm sm:justify-end">
           <Badge variant="secondary">{member.role}</Badge>
 
           <button
