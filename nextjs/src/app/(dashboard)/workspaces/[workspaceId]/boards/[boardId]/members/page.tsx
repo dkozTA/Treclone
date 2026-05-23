@@ -14,8 +14,8 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, UserPlus, Trash2, Check } from 'lucide-react';
-import Link from 'next/link';
+import { UserPlus, Trash2, Check } from 'lucide-react';
+import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
 
 export default function BoardMembersPage() {
   const params = useParams();
@@ -62,21 +62,11 @@ export default function BoardMembersPage() {
 
   return (
     <main className="mx-auto max-w-4xl space-y-gap-lg px-gap-md py-gap-lg">
-      <div className="flex items-center gap-gap-md">
-        <Button variant="ghost" size="icon-sm" asChild>
-          <Link href={`/workspaces/${workspaceId}/boards/${boardId}`}>
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-headline-lg font-heading text-ink">
-            Board Members
-          </h1>
-          <p className="text-body text-ink-muted">
-            Manage who can access this board
-          </p>
-        </div>
-      </div>
+      <DashboardPageHeader
+        title="Board Members"
+        description="Manage who can access this board"
+        backHref={`/workspaces/${workspaceId}/boards/${boardId}`}
+      />
 
       {error && (
         <Card className="border-destructive bg-destructive/5">

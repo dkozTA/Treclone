@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, AlertCircle } from 'lucide-react';
+import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
 
 export default function BoardsPage() {
   const params = useParams();
@@ -24,8 +25,7 @@ export default function BoardsPage() {
   if (isLoading) {
     return (
       <main className="space-y-gap-lg">
-        {/* Header Skeleton */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-gap-md md:flex-row md:items-start md:justify-between">
           <div className="space-y-gap-sm flex-1">
             <Skeleton className="h-8 w-48" />
             <Skeleton className="h-4 w-80" />
@@ -54,19 +54,16 @@ export default function BoardsPage() {
 
   return (
     <main className="space-y-gap-lg">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-gap-sm">
-          <h1 className="text-headline-lg font-heading text-ink">My Boards</h1>
-          <p className="text-body text-ink-muted">
-            Manage and organize your tasks across different boards
-          </p>
-        </div>
-        <Button variant="default" onClick={() => setShowCreateModal(true)}>
-          <Plus className="h-4 w-4 mr-gap-sm" />
-          Create Board
-        </Button>
-      </div>
+      <DashboardPageHeader
+        title="My Boards"
+        description="Manage and organize your tasks across different boards"
+        actions={
+          <Button variant="default" onClick={() => setShowCreateModal(true)}>
+            <Plus className="h-4 w-4 mr-gap-sm" />
+            Create Board
+          </Button>
+        }
+      />
 
       {/* Error State */}
       {error && (

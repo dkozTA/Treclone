@@ -11,6 +11,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
 
 export default function WorkspaceDetailPage() {
   const params = useParams();
@@ -112,21 +113,19 @@ export default function WorkspaceDetailPage() {
 
   return (
     <main className="space-y-gap-lg">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-headline-lg font-heading text-ink mb-gap-sm">
-            {workspace?.name}
-          </h1>
-          <p className="text-body text-ink-muted">
-            {workspace?.description || 'Manage your boards and tasks'}
-          </p>
-        </div>
-        <Button variant="default" onClick={() => setShowCreateBoardModal(true)}>
-          <Plus className="h-4 w-4 mr-gap-sm" />
-          New Board
-        </Button>
-      </div>
+      <DashboardPageHeader
+        title={workspace?.name || 'Workspace'}
+        description={workspace?.description || 'Manage your boards and tasks'}
+        actions={
+          <Button
+            variant="default"
+            onClick={() => setShowCreateBoardModal(true)}
+          >
+            <Plus className="h-4 w-4 mr-gap-sm" />
+            New Board
+          </Button>
+        }
+      />
       {/* Boards Grid */}
       {boardsLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gap-lg">

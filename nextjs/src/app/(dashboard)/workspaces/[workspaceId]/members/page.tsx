@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
 import { UserPlus, Trash2 } from 'lucide-react';
 
 export default function MembersPage() {
@@ -40,41 +41,36 @@ export default function MembersPage() {
 
   return (
     <main className="max-w-4xl mx-auto space-y-gap-lg">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-headline-lg font-heading text-ink">
-            Team Members
-          </h1>
-          <p className="text-body text-ink-muted">
-            Manage workspace members and permissions
-          </p>
-        </div>
-
-        <div className="flex items-center gap-gap-sm">
-          <input
-            className="px-gap-md py-gap-sm border border-hairline-ghost rounded-sm"
-            placeholder="member@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <select
-            className="px-gap-md py-gap-sm border border-hairline-ghost rounded-sm text-label-sm"
-            value={role}
-            onChange={(e) => setRole(e.target.value as 'member' | 'admin')}
-          >
-            <option value="member">Member</option>
-            <option value="admin">Admin</option>
-          </select>
-          <Button
-            variant="default"
-            onClick={handleAddMember}
-            disabled={addMemberMutation.isPending}
-          >
-            <UserPlus className="h-4 w-4 mr-gap-sm" />
-            {addMemberMutation.isPending ? 'Adding...' : 'Add Member'}
-          </Button>
-        </div>
-      </div>
+      <DashboardPageHeader
+        title="Team Members"
+        description="Manage workspace members and permissions"
+        actions={
+          <div className="flex flex-wrap items-center gap-gap-sm">
+            <input
+              className="w-full rounded-sm border border-hairline-ghost px-gap-md py-gap-sm md:w-64"
+              placeholder="member@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <select
+              className="rounded-sm border border-hairline-ghost px-gap-md py-gap-sm text-label-sm"
+              value={role}
+              onChange={(e) => setRole(e.target.value as 'member' | 'admin')}
+            >
+              <option value="member">Member</option>
+              <option value="admin">Admin</option>
+            </select>
+            <Button
+              variant="default"
+              onClick={handleAddMember}
+              disabled={addMemberMutation.isPending}
+            >
+              <UserPlus className="h-4 w-4 mr-gap-sm" />
+              {addMemberMutation.isPending ? 'Adding...' : 'Add Member'}
+            </Button>
+          </div>
+        }
+      />
 
       {error && (
         <Card className="border-destructive bg-destructive/5">
