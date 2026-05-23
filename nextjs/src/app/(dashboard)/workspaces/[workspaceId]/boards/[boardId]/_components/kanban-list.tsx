@@ -29,7 +29,7 @@ export function KanbanList({
   onAddCard,
   onDeleteList,
   onDeleteCard,
-}: KanbanListProps) {
+}: Readonly<KanbanListProps>) {
   return (
     <div className="min-w-0 bg-surface-1 rounded-sm p-gap-md">
       <div className="mb-gap-md flex items-center justify-between gap-gap-sm">

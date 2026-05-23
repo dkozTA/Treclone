@@ -17,7 +17,7 @@ export function AddListModal({
   onClose,
   onCreate,
   isLoading,
-}: AddListModalProps) {
+}: Readonly<AddListModalProps>) {
   const [title, setTitle] = useState('');
 
   const handleSubmit = () => {
