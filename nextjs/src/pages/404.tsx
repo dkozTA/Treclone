@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Custom404() {
   return (
     <main
@@ -28,7 +30,7 @@ export default function Custom404() {
         <p style={{ color: '#687783', fontSize: 14, margin: '0 0 24px' }}>
           The page you are looking for does not exist or has been moved.
         </p>
-        <a
+        <Link
           href="/"
           style={{
             background: 'linear-gradient(135deg, #0053dc, #3e76fe)',
@@ -44,7 +46,7 @@ export default function Custom404() {
           }}
         >
           Go home
-        </a>
+        </Link>
       </div>
     </main>
   );
