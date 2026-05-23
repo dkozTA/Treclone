@@ -1,15 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useBoard } from '@/hooks/boards/queries';
-import { useUpdateBoard } from '@/hooks/boards/mutations';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
+import { useBoard, useDeleteBoard, useUpdateBoard } from '@/hooks/boards';
+import {
+  AlertCircle,
+  CalendarDays,
+  Loader2,
+  Columns3,
+  LayoutList,
+} from 'lucide-react';
 
 export default function BoardEditPage() {
   const router = useRouter();
@@ -20,6 +27,7 @@ export default function BoardEditPage() {
 
   const [formData, setFormData] = useState({ title: '', description: '' });
   const [showError, setShowError] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const {
     data: board,
@@ -27,6 +35,7 @@ export default function BoardEditPage() {
     error: fetchError,
   } = useBoard(workspaceId, boardId);
   const updateMutation = useUpdateBoard(workspaceId, boardId);
+  const deleteMutation = useDeleteBoard(workspaceId, boardId);
 
   // Populate form with board data
   useEffect(() => {
@@ -54,10 +63,34 @@ export default function BoardEditPage() {
     });
   };
 
+  const boardUpdatedAt = useMemo(
+    () =>
+      board?.updatedAt ? new Date(board.updatedAt).toLocaleDateString() : null,
+    [board?.updatedAt]
+  );
+
+  const handleDeleteBoard = () => {
+    deleteMutation.mutate(undefined, {
+      onSuccess: () => {
+        router.push(`/workspaces/${workspaceId}`);
+      },
+    });
+  };
+
   if (isLoading) {
     return (
-      <main className="max-w-2xl mx-auto space-y-gap-lg">
-        <Skeleton className="h-10 w-48" />
+      <main className="mx-auto max-w-5xl space-y-gap-lg px-gap-md py-gap-lg">
+        <Skeleton className="h-10 w-56" />
+        <div className="grid gap-gap-md md:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <Card key={`board-edit-skeleton-${i}`}>
+              <CardContent className="space-y-gap-sm pt-gap-lg">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-8 w-24" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
         <Card>
           <CardHeader>
             <Skeleton className="h-6 w-40" />
@@ -83,8 +116,12 @@ export default function BoardEditPage() {
 
   if (fetchError) {
     return (
-      <main className="max-w-2xl mx-auto space-y-gap-lg">
-        <h1 className="text-headline-lg font-heading text-ink">Edit Board</h1>
+      <main className="mx-auto max-w-5xl space-y-gap-lg px-gap-md py-gap-lg">
+        <DashboardPageHeader
+          title="Edit Board"
+          description="Update board details, then return to the board canvas."
+          backHref={`/workspaces/${workspaceId}/boards/${boardId}`}
+        />
         <Card className="border-destructive bg-destructive/5">
           <CardContent className="pt-gap-lg">
             <div className="flex gap-gap-md items-start">
@@ -105,8 +142,48 @@ export default function BoardEditPage() {
   }
 
   return (
-    <main className="max-w-2xl mx-auto space-y-gap-lg">
-      <h1 className="text-headline-lg font-heading text-ink">Edit Board</h1>
+    <main className="mx-auto max-w-5xl space-y-gap-lg px-gap-md py-gap-lg">
+      <DashboardPageHeader
+        title="Edit Board"
+        description="Update the title and description, or delete the board if you no longer need it."
+        backHref={`/workspaces/${workspaceId}/boards/${boardId}`}
+      />
+
+      <div className="grid gap-gap-md md:grid-cols-3">
+        <Card>
+          <CardContent className="flex items-center justify-between gap-gap-md pt-gap-lg">
+            <div>
+              <p className="text-label-sm text-ink-muted">Board</p>
+              <p className="text-title-lg font-heading text-ink">
+                {board?.title || 'Untitled'}
+              </p>
+            </div>
+            <LayoutList className="h-5 w-5 text-ink-muted" />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="flex items-center justify-between gap-gap-md pt-gap-lg">
+            <div>
+              <p className="text-label-sm text-ink-muted">Lists</p>
+              <p className="text-title-lg font-heading text-ink">Editable</p>
+            </div>
+            <Columns3 className="h-5 w-5 text-ink-muted" />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="flex items-center justify-between gap-gap-md pt-gap-lg">
+            <div>
+              <p className="text-label-sm text-ink-muted">Updated</p>
+              <p className="text-title-lg font-heading text-ink">
+                {boardUpdatedAt || 'Today'}
+              </p>
+            </div>
+            <CalendarDays className="h-5 w-5 text-ink-muted" />
+          </CardContent>
+        </Card>
+      </div>
 
       {showError && updateMutation.error && (
         <Card className="border-destructive bg-destructive/5">
@@ -183,6 +260,34 @@ export default function BoardEditPage() {
           </div>
         </CardContent>
       </Card>
+
+      <Card className="border-destructive/20">
+        <CardHeader>
+          <CardTitle className="text-destructive">Danger Zone</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-gap-md">
+          <p className="text-body text-ink-muted">
+            Deleting this board removes its lists and cards permanently.
+          </p>
+          <Button
+            variant="destructive"
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={deleteMutation.isPending || updateMutation.isPending}
+          >
+            Delete Board
+          </Button>
+        </CardContent>
+      </Card>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete Board"
+        description={`Delete "${board?.title || 'this board'}"? This will delete its lists and cards.`}
+        confirmLabel="Delete Board"
+        isLoading={deleteMutation.isPending}
+        onOpenChange={setShowDeleteConfirm}
+        onConfirm={handleDeleteBoard}
+      />
     </main>
   );
 }

@@ -3,12 +3,20 @@
 import { useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useAllBoardCards } from '@/hooks/cards';
+import { useLists } from '@/hooks/lists';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, CalendarDays, Tag } from 'lucide-react';
+import {
+  Search,
+  CalendarDays,
+  Tag,
+  Columns3,
+  LayoutList,
+  Clock3,
+} from 'lucide-react';
 import { CardEditModal } from './_components/card-edit-modal';
 import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
 
@@ -34,6 +42,10 @@ export default function CardsPage() {
   const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
 
   const { data, isLoading, error } = useAllBoardCards(workspaceId, boardId);
+  const { data: listsData, isLoading: listsLoading } = useLists(
+    workspaceId,
+    boardId
+  );
 
   const cards = useMemo<CardItem[]>(() => {
     const allCards = (data?.data ?? []) as CardItem[];
@@ -48,6 +60,15 @@ export default function CardsPage() {
     );
   }, [data, search]);
 
+  const totalLists = listsData?.data?.lists?.length ?? 0;
+  const latestUpdatedAt = useMemo(() => {
+    if (!cards.length) return null;
+
+    return cards.reduce((latest, card) => {
+      return Math.max(latest, new Date(card.updatedAt).getTime());
+    }, 0);
+  }, [cards]);
+
   const closeModal = () => {
     setSelectedCard(null);
   };
@@ -59,6 +80,17 @@ export default function CardsPage() {
           <div className="flex items-center gap-gap-md">
             <Skeleton className="h-8 w-48" />
           </div>
+        </div>
+
+        <div className="grid gap-gap-md md:grid-cols-3">
+          {[1, 2, 3].map((id) => (
+            <Card key={`cards-summary-skeleton-${id}`}>
+              <CardContent className="space-y-gap-sm pt-gap-lg">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-8 w-20" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         <Skeleton className="h-11 w-full max-w-md" />
@@ -101,6 +133,11 @@ export default function CardsPage() {
           }
           backHref={`/workspaces/${workspaceId}/boards/${boardId}`}
         />
+        <Card className="border-destructive bg-destructive/5">
+          <CardContent className="pt-gap-lg">
+            <p className="text-destructive text-body">{error.message}</p>
+          </CardContent>
+        </Card>
       </main>
     );
   }
@@ -113,6 +150,46 @@ export default function CardsPage() {
           description="Browse all cards in this board"
           backHref={`/workspaces/${workspaceId}/boards/${boardId}`}
         />
+
+        <div className="grid gap-gap-md md:grid-cols-3">
+          <Card>
+            <CardContent className="flex items-center justify-between gap-gap-md pt-gap-lg">
+              <div>
+                <p className="text-label-sm text-ink-muted">Cards</p>
+                <p className="text-title-lg font-heading text-ink">
+                  {cards.length}
+                </p>
+              </div>
+              <LayoutList className="h-5 w-5 text-ink-muted" />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="flex items-center justify-between gap-gap-md pt-gap-lg">
+              <div>
+                <p className="text-label-sm text-ink-muted">Lists</p>
+                <p className="text-title-lg font-heading text-ink">
+                  {listsLoading ? '...' : totalLists}
+                </p>
+              </div>
+              <Columns3 className="h-5 w-5 text-ink-muted" />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="flex items-center justify-between gap-gap-md pt-gap-lg">
+              <div>
+                <p className="text-label-sm text-ink-muted">Updated</p>
+                <p className="text-title-lg font-heading text-ink">
+                  {latestUpdatedAt
+                    ? new Date(latestUpdatedAt).toLocaleDateString()
+                    : 'None'}
+                </p>
+              </div>
+              <Clock3 className="h-5 w-5 text-ink-muted" />
+            </CardContent>
+          </Card>
+        </div>
 
         <div className="relative max-w-md">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />

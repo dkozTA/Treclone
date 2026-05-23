@@ -1,14 +1,25 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useMemo, useEffect } from 'react';
 import { DragDropContext, type DropResult } from '@hello-pangea/dnd';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLists, useCreateList, useDeleteList } from '@/hooks/lists';
 import { useDeleteCard } from '@/hooks/cards';
-import { Plus } from 'lucide-react';
+import { useBoard } from '@/hooks/boards';
+import {
+  CalendarDays,
+  Columns3,
+  LayoutList,
+  Pencil,
+  Plus,
+  Users,
+} from 'lucide-react';
 import { KanbanList } from './kanban-list';
 import { AddListButton } from './add-list-button';
 import { AddListModal } from './add-list-modal';
@@ -80,6 +91,7 @@ export function KanbanBoard({
   boardId,
   workspaceId,
 }: Readonly<KanbanBoardProps>) {
+  const { data: board } = useBoard(workspaceId, boardId);
   const [showAddListModal, setShowAddListModal] = useState(false);
   const [showAddCardModal, setShowAddCardModal] = useState(false);
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
@@ -114,6 +126,15 @@ export function KanbanBoard({
     () => listsData?.data?.lists || [],
     [listsData?.data?.lists]
   );
+
+  const totalCards = useMemo(
+    () => lists.reduce((count, list) => count + (list.cards?.length || 0), 0),
+    [lists]
+  );
+
+  const boardUpdatedAt = board?.updatedAt
+    ? new Date(board.updatedAt).toLocaleDateString()
+    : null;
 
   useEffect(() => {
     const cardsMap: Record<string, CardItem[]> = {};
@@ -269,8 +290,21 @@ export function KanbanBoard({
     return (
       <div className="space-y-gap-lg">
         <div className="flex flex-col gap-gap-md md:flex-row md:items-start md:justify-between">
-          <Skeleton className="h-12 w-64" />
+          <div className="space-y-gap-sm">
+            <Skeleton className="h-12 w-64" />
+            <Skeleton className="h-5 w-80" />
+          </div>
           <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid gap-gap-md md:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <Card key={`summary-skeleton-${i}`}>
+              <CardContent className="space-y-gap-sm pt-gap-lg">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-8 w-20" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
         <div className="grid grid-cols-1 gap-gap-lg md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {[1, 2, 3].map((i) => (
@@ -287,41 +321,125 @@ export function KanbanBoard({
   return (
     <>
       <DashboardPageHeader
-        title="Board"
+        title={board?.title ?? 'Board'}
+        description={
+          board?.description ||
+          'Manage lists, cards, and team flow in one place.'
+        }
+        backHref={`/workspaces/${workspaceId}`}
         actions={
-          <Button
-            variant="default"
-            className="w-full sm:w-auto"
-            onClick={() => setShowAddListModal(true)}
-            disabled={createListMutation.isPending}
-          >
-            <Plus className="h-4 w-4 mr-gap-sm" />
-            Add List
-          </Button>
+          <>
+            <Button variant="outline" asChild className="w-full sm:w-auto">
+              <Link href={`/workspaces/${workspaceId}/boards/${boardId}/edit`}>
+                <Pencil className="mr-gap-sm h-4 w-4" />
+                Edit Board
+              </Link>
+            </Button>
+            <Button
+              variant="default"
+              className="w-full sm:w-auto"
+              onClick={() => setShowAddListModal(true)}
+              disabled={createListMutation.isPending}
+            >
+              <Plus className="h-4 w-4 mr-gap-sm" />
+              Add List
+            </Button>
+          </>
         }
       />
 
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-1 gap-gap-lg md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {lists.map((list) => (
-            <KanbanList
-              key={list.id}
-              listId={list.id}
-              title={list.title}
-              cards={listCards[list.id] || []}
-              onAddCard={openAddCardModal}
-              onDeleteList={(listId, title) =>
-                setListToDelete({ id: listId, title })
-              }
-              onDeleteCard={setCardToDelete}
-            />
-          ))}
+      <div className="grid gap-gap-md md:grid-cols-3">
+        <Card>
+          <CardContent className="flex items-center justify-between gap-gap-md pt-gap-lg">
+            <div>
+              <p className="text-label-sm text-ink-muted">Lists</p>
+              <p className="text-title-lg font-heading text-ink">
+                {lists.length}
+              </p>
+            </div>
+            <Columns3 className="h-5 w-5 text-ink-muted" />
+          </CardContent>
+        </Card>
 
-          <AddListButton
-            onAdd={() => setShowAddListModal(true)}
-            isLoading={createListMutation.isPending}
-          />
-        </div>
+        <Card>
+          <CardContent className="flex items-center justify-between gap-gap-md pt-gap-lg">
+            <div>
+              <p className="text-label-sm text-ink-muted">Cards</p>
+              <p className="text-title-lg font-heading text-ink">
+                {totalCards}
+              </p>
+            </div>
+            <LayoutList className="h-5 w-5 text-ink-muted" />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="flex items-center justify-between gap-gap-md pt-gap-lg">
+            <div>
+              <p className="text-label-sm text-ink-muted">Updated</p>
+              <p className="text-title-lg font-heading text-ink">
+                {boardUpdatedAt || 'Today'}
+              </p>
+            </div>
+            <CalendarDays className="h-5 w-5 text-ink-muted" />
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-gap-sm text-label-sm text-ink-muted">
+        <Badge variant="secondary">Workspace {workspaceId}</Badge>
+        <Badge variant="secondary">Board {boardId}</Badge>
+        <span className="inline-flex items-center gap-gap-xs">
+          <Users className="h-3.5 w-3.5" />
+          Collaborative board view
+        </span>
+      </div>
+
+      <DragDropContext onDragEnd={handleDragEnd}>
+        {lists.length === 0 ? (
+          <Card className="border-dashed">
+            <CardContent className="flex flex-col items-center gap-gap-md py-gap-xl text-center">
+              <div className="space-y-gap-sm">
+                <p className="text-title-md font-heading text-ink">
+                  No lists yet
+                </p>
+                <p className="max-w-lg text-body text-ink-muted">
+                  Start the board by creating your first list, then add cards to
+                  map out the workflow.
+                </p>
+              </div>
+              <Button
+                variant="default"
+                onClick={() => setShowAddListModal(true)}
+                disabled={createListMutation.isPending}
+              >
+                <Plus className="mr-gap-sm h-4 w-4" />
+                Add your first list
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 gap-gap-lg md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {lists.map((list) => (
+              <KanbanList
+                key={list.id}
+                listId={list.id}
+                title={list.title}
+                cards={listCards[list.id] || []}
+                onAddCard={openAddCardModal}
+                onDeleteList={(listId, title) =>
+                  setListToDelete({ id: listId, title })
+                }
+                onDeleteCard={setCardToDelete}
+              />
+            ))}
+
+            <AddListButton
+              onAdd={() => setShowAddListModal(true)}
+              isLoading={createListMutation.isPending}
+            />
+          </div>
+        )}
       </DragDropContext>
 
       {showAddListModal && (
