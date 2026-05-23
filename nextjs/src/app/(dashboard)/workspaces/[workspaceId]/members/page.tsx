@@ -19,7 +19,7 @@ export default function MembersPage() {
   const workspaceId =
     typeof params?.workspaceId === 'string' ? params.workspaceId : '';
 
-  const { data, isLoading, error } = useWorkspaceMembers(workspaceId);
+  const { data, isLoading } = useWorkspaceMembers(workspaceId);
   const addMemberMutation = useAddWorkspaceMember(workspaceId);
 
   const [email, setEmail] = useState('');
