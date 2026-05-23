@@ -43,7 +43,8 @@ export class WorkspaceMemberController {
                     {
                         message: 'Member added successfully',
                         member: convertBigIntToString(member),
-                    }
+                    },
+                    201
                 ),
                 { status: 201 }
             )

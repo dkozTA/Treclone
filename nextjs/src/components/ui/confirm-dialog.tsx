@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -16,7 +17,10 @@ interface ConfirmDialogProps {
   description: string;
   confirmLabel?: string;
   cancelLabel?: string;
+  loadingLabel?: string;
+  children?: ReactNode;
   isLoading?: boolean;
+  confirmDisabled?: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
 }
@@ -27,17 +31,24 @@ export function ConfirmDialog({
   description,
   confirmLabel = 'Delete',
   cancelLabel = 'Cancel',
+  loadingLabel = 'Deleting...',
+  children,
   isLoading,
+  confirmDisabled,
   onOpenChange,
   onConfirm,
 }: Readonly<ConfirmDialogProps>) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-sm bg-surface-1" showCloseButton={false}>
+      <DialogContent
+        className="rounded-sm bg-surface-1"
+        showCloseButton={false}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
+        {children && <div className="space-y-gap-sm">{children}</div>}
         <DialogFooter>
           <Button
             variant="outline"
@@ -49,9 +60,9 @@ export function ConfirmDialog({
           <Button
             variant="destructive"
             onClick={onConfirm}
-            disabled={isLoading}
+            disabled={isLoading || confirmDisabled}
           >
-            {isLoading ? 'Deleting...' : confirmLabel}
+            {isLoading ? loadingLabel : confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

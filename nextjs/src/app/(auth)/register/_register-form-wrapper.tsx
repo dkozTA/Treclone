@@ -19,7 +19,7 @@ export function RegisterFormWrapper() {
       {/* Footer Link */}
       <div className="text-center pt-gap-md border-t border-hairline-ghost">
         <p className="text-body text-ink-muted">
-          Already have an account?{' '}
+          Already have an account?{''}
           <a
             href="/login"
             className="text-primary hover:text-primary-container font-semibold"

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { WorkspaceController } from '@/lib/controllers/workspace.controller'
 import { verifyTokenFromCookie } from '@/lib/utils/auth'
-import { errorResponse } from '@/lib/utils/api-utils'
+import { unauthorized } from '@/lib/utils/api-utils'
 
 const controller = new WorkspaceController()
 
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
-        return errorResponse('Unauthorized', 401)
+        return unauthorized('Unauthorized')
     }
 
     return controller.getWorkspaces(request, userId)
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
-        return errorResponse('Unauthorized', 401)
+        return unauthorized('Unauthorized')
     }
 
     return controller.createWorkspace(request, userId)

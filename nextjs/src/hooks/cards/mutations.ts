@@ -22,13 +22,13 @@ interface CardResponse {
 interface CreateCardInput {
     title: string
     description?: string
-    assigneeId?: string
+    assigneeUserId?: string
 }
 
 interface UpdateCardInput {
     title?: string
     description?: string
-    assigneeId?: string
+    assigneeUserId?: string
 }
 
 interface MoveCardInput {

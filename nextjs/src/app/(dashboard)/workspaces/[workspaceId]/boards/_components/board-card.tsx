@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useDeleteBoard } from '@/hooks/boards';
-import { Trash2, Loader2, AlertCircle } from 'lucide-react';
+import { Trash2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface BoardCardProps {
@@ -59,76 +60,45 @@ export function BoardCard({
           </div>
         )}
 
-        {/* Board Link */}
-        {!showDeleteConfirm && (
-          <>
-            <Link href={`/workspaces/${workspaceId}/boards/${board.id}`}>
-              <h3 className="text-title-md font-heading text-ink hover:text-primary transition-colors">
-                {board.title}
-              </h3>
-            </Link>
+        <Link href={`/workspaces/${workspaceId}/boards/${board.id}`}>
+          <h3 className="text-title-md font-heading text-ink hover:text-primary transition-colors">
+            {board.title}
+          </h3>
+        </Link>
 
-            {board.description && (
-              <p className="text-body text-ink-muted line-clamp-2">
-                {board.description}
-              </p>
-            )}
-
-            <div className="text-label-sm text-ink-muted">
-              Created {new Date(board.createdAt).toLocaleDateString()}
-            </div>
-
-            {/* Delete Button */}
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              disabled={deleteMutation.isPending}
-              className="mt-gap-md text-destructive hover:bg-destructive/5 p-gap-sm rounded-sm disabled:opacity-50 transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </>
+        {board.description && (
+          <p className="text-body text-ink-muted line-clamp-2">
+            {board.description}
+          </p>
         )}
 
-        {/* Delete Confirmation */}
-        {showDeleteConfirm && (
-          <div className="space-y-gap-md p-gap-md bg-destructive/5 rounded-sm">
-            <div>
-              <p className="text-body text-ink font-medium mb-gap-sm">
-                Delete "{board.title}"?
-              </p>
-              <p className="text-label-sm text-ink-muted">
-                This action cannot be undone. All boards content will be
-                deleted.
-              </p>
-            </div>
-            <div className="flex gap-gap-sm">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setShowDeleteConfirm(false);
-                  setShowError(false);
-                }}
-                disabled={deleteMutation.isPending}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleDelete}
-                disabled={deleteMutation.isPending}
-                className="flex items-center gap-gap-sm"
-              >
-                {deleteMutation.isPending && (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                )}
-                Delete
-              </Button>
-            </div>
-          </div>
-        )}
+        <div className="text-label-sm text-ink-muted">
+          Created {new Date(board.createdAt).toLocaleDateString()}
+        </div>
+
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => setShowDeleteConfirm(true)}
+          disabled={deleteMutation.isPending}
+          className="text-destructive hover:bg-destructive/10"
+          aria-label={`Delete board ${board.title}`}
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
       </CardContent>
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete Board"
+        description={`Delete "${board.title}"? This will delete its lists and cards.`}
+        isLoading={deleteMutation.isPending}
+        onOpenChange={(open) => {
+          setShowDeleteConfirm(open);
+          if (!open) setShowError(false);
+        }}
+        onConfirm={handleDelete}
+      />
     </Card>
   );
 }

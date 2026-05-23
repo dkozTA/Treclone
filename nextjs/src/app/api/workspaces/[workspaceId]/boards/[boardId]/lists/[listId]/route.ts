@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { ListController } from '@/lib/controllers/list.controller'
 import { verifyTokenFromCookie } from '@/lib/utils/auth'
-import { errorResponse } from '@/lib/utils/api-utils'
+import { unauthorized } from '@/lib/utils/api-utils'
 
 const controller = new ListController()
 
@@ -13,7 +13,7 @@ export async function GET(
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
-        return errorResponse('Unauthorized', 401)
+        return unauthorized()
     }
 
     return controller.getList(request, BigInt(listId), userId)
@@ -27,7 +27,7 @@ export async function PATCH(
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
-        return errorResponse('Unauthorized', 401)
+        return unauthorized()
     }
 
     return controller.updateList(request, BigInt(listId), userId)
@@ -41,7 +41,7 @@ export async function DELETE(
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
-        return errorResponse('Unauthorized', 401)
+        return unauthorized()
     }
 
     return controller.deleteList(request, BigInt(listId), userId)

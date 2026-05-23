@@ -26,7 +26,6 @@ export default function WorkspacesPage() {
   const { data, isLoading, error } = useWorkspaces();
   const createMutation = useCreateWorkspace();
 
-  // Transform API data to display format
   const workspaces: DisplayWorkspace[] =
     data?.workspaces?.map((ws: any) => ({
       id: ws.id,

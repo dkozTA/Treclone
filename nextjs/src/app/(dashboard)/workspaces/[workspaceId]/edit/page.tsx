@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useUpdateWorkspace } from '@/hooks/workspace';
+import { useWorkspace, useUpdateWorkspace } from '@/hooks/workspace';
 import {
   updateWorkspaceSchema,
   type UpdateWorkspaceInput,
@@ -22,8 +22,6 @@ export default function EditWorkspacePage({
 }>) {
   const { workspaceId } = use(params);
 
-  const updateMutation = useUpdateWorkspace(workspaceId);
-
   const {
     register,
     handleSubmit,
@@ -33,16 +31,60 @@ export default function EditWorkspacePage({
     resolver: zodResolver(updateWorkspaceSchema),
   });
 
-  // Simulate loading initial data
+  const { data: workspace, isLoading, isError } = useWorkspace(workspaceId);
+  const updateMutation = useUpdateWorkspace(workspaceId);
+
+  // Prefill form when workspace loads
   useEffect(() => {
-    // In real app, fetch workspace data
-    setValue('name', 'Design Team');
-    setValue('description', 'Team for design projects');
-  }, [workspaceId, setValue]);
+    if (workspace) {
+      setValue('name', workspace.name);
+      setValue('description', workspace.description ?? '');
+    }
+  }, [workspace, setValue]);
 
   const onSubmit = async (formData: UpdateWorkspaceInput) => {
     updateMutation.mutate(formData);
   };
+
+  if (isLoading) {
+    return (
+      <main className="max-w-2xl mx-auto space-y-gap-lg">
+        <div className="flex items-center gap-gap-md">
+          <Button variant="ghost" size="icon-sm" asChild>
+            <Link href="/workspaces">
+              <ArrowLeft className="w-4 h-4" />
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-headline-lg font-heading text-ink">
+              Edit Workspace
+            </h1>
+          </div>
+        </div>
+        <div>Loading workspace…</div>
+      </main>
+    );
+  }
+
+  if (isError) {
+    return (
+      <main className="max-w-2xl mx-auto space-y-gap-lg">
+        <div className="flex items-center gap-gap-md">
+          <Button variant="ghost" size="icon-sm" asChild>
+            <Link href="/workspaces">
+              <ArrowLeft className="w-4 h-4" />
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-headline-lg font-heading text-ink">
+              Edit Workspace
+            </h1>
+          </div>
+        </div>
+        <div className="text-destructive">Failed to load workspace.</div>
+      </main>
+    );
+  }
 
   return (
     <main className="max-w-2xl mx-auto space-y-gap-lg">

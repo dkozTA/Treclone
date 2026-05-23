@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
 import {
   Card,
   CardContent,
@@ -19,6 +20,7 @@ interface Preferences {
 }
 
 export function PreferencesSettings() {
+  const { setTheme } = useTheme();
   const { data: preferences, isLoading } = usePreferencesSettings();
   const updatePreference = useUpdatePreferences();
 
@@ -30,12 +32,16 @@ export function PreferencesSettings() {
   useEffect(() => {
     if (preferences) {
       setLocalPreferences(preferences);
+      setTheme(preferences.darkMode ? 'dark' : 'light');
     }
-  }, [preferences]);
+  }, [preferences, setTheme]);
 
   const handleToggle = async (key: keyof Preferences) => {
     const newValue = !localPreferences[key];
     setLocalPreferences({ ...localPreferences, [key]: newValue });
+    if (key === 'darkMode') {
+      setTheme(newValue ? 'dark' : 'light');
+    }
     updatePreference.mutate({ [key]: newValue });
   };
 

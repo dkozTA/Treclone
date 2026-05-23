@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 
-export function responseJson(obj: any, status = 200) {
+export function responseJson(obj: unknown, status = 200) {
     return NextResponse.json(obj, { status });
 }
 
-export const ok = (data: any) => responseJson(successResponse(data), 200);
-export const created = (data: any) => responseJson(successResponse(data), 201);
+export const ok = <T>(data: T) => responseJson(successResponse(data, 200), 200);
+export const created = <T>(data: T) => responseJson(successResponse(data, 201), 201);
 export const badRequest = (msg = 'Bad Request') =>
     responseJson(errorResponse(msg, 400), 400);
 export const unauthorized = (msg = 'Unauthorized') =>
@@ -19,7 +19,7 @@ export interface ApiResponse<T> {
 }
 
 // Convert BigInt and Date objects to string for JSON serialization
-export function convertBigIntToString(obj: any): any {
+export function convertBigIntToString(obj: unknown): unknown {
     if (obj === null || obj === undefined) return obj
 
     if (typeof obj === 'bigint') {
@@ -35,10 +35,10 @@ export function convertBigIntToString(obj: any): any {
     }
 
     if (typeof obj === 'object') {
-        const converted: any = {}
+        const converted: Record<string, unknown> = {}
         for (const key in obj) {
             if (Object.hasOwn(obj, key)) {
-                converted[key] = convertBigIntToString(obj[key])
+                converted[key] = convertBigIntToString((obj as Record<string, unknown>)[key])
             }
         }
         return converted
@@ -51,11 +51,12 @@ export function convertBigIntToString(obj: any): any {
  * Returns a plain object
  * Controller wraps this in NextResponse.json()
  */
-export function successResponse<T>(data: T) {
+export function successResponse<T>(data: T, status: number = 200): ApiResponse<unknown> {
     const convertedData = convertBigIntToString(data)
     return {
         success: true,
         data: convertedData,
+        status,
     }
 }
 

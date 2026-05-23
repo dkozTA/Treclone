@@ -1,5 +1,5 @@
 import { WorkspaceSettingsRepository } from '@/lib/repositories/workspace-settings.repository'
-import { updateWorkspaceSettingsSchema } from '@/lib/validation/workspace'
+import { updateWorkspaceSettingsSchema } from '@/lib/validation/workspace-settings'
 import { AuthError, AuthErrorCode } from '@/lib/utils/error-handler'
 
 export class WorkspaceSettingsService {

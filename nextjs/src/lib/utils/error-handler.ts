@@ -84,7 +84,11 @@ export function handleAuthError(error: unknown): AuthError {
         }
 
         console.error('[Auth Unexpected]', message)
-        return new AuthError(message, 400, AuthErrorCode.INTERNAL_ERROR)
+        return new AuthError(
+            'An unexpected error occurred',
+            500,
+            AuthErrorCode.INTERNAL_ERROR
+        )
     }
 
     // Unknown error

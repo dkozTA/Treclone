@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { SettingsController } from '@/lib/controllers/settings.controller'
 import { verifyTokenFromCookie } from '@/lib/utils/auth'
-import { errorResponse } from '@/lib/utils/api-utils'
+import { unauthorized } from '@/lib/utils/api-utils'
 
 const controller = new SettingsController()
 
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
-        return errorResponse('Unauthorized', 401)
+        return unauthorized()
     }
 
     return controller.getUserPreferences(request, userId)
@@ -21,7 +21,7 @@ export async function PATCH(request: NextRequest) {
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
-        return errorResponse('Unauthorized', 401)
+        return unauthorized()
     }
 
     const body = await request.json()
@@ -39,7 +39,7 @@ export async function DELETE(request: NextRequest) {
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
-        return errorResponse('Unauthorized', 401)
+        return unauthorized()
     }
 
     return controller.deleteAccount(request, userId)

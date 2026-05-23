@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useWorkspaceActivities } from '@/hooks/workspace-activity';
 import { AlertCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
 
 interface Activity {
   id: string;
@@ -25,7 +26,9 @@ export default function ActivityPage() {
   if (isLoading) {
     return (
       <main className="max-w-4xl mx-auto space-y-gap-lg">
-        <Skeleton className="h-10 w-48" />
+        <div className="flex flex-col gap-gap-sm md:flex-row md:items-start md:justify-between">
+          <Skeleton className="h-10 w-48" />
+        </div>
         <Card>
           <CardHeader>
             <Skeleton className="h-6 w-40" />
@@ -46,7 +49,7 @@ export default function ActivityPage() {
   if (error) {
     return (
       <main className="max-w-4xl mx-auto space-y-gap-lg">
-        <h1 className="text-headline-lg font-heading text-ink">Activity Log</h1>
+        <DashboardPageHeader title="Activity Log" />
         <Card className="border-destructive bg-destructive/5">
           <CardContent className="pt-gap-lg">
             <div className="flex gap-gap-md items-start">
@@ -68,7 +71,10 @@ export default function ActivityPage() {
 
   return (
     <main className="max-w-4xl mx-auto space-y-gap-lg">
-      <h1 className="text-headline-lg font-heading text-ink">Activity Log</h1>
+      <DashboardPageHeader
+        title="Activity Log"
+        description="Recent workspace activity, grouped by who did what and when."
+      />
 
       <Card>
         <CardHeader>
@@ -83,8 +89,8 @@ export default function ActivityPage() {
                   className="py-gap-md border-b border-hairline-ghost last:border-b-0"
                 >
                   <p className="text-body text-ink">
-                    <span className="font-semibold">{activity.user}</span>{' '}
-                    {activity.action}{' '}
+                    <span className="font-semibold">{activity.user}</span>
+                    {activity.action}
                     <span className="text-primary">{activity.target}</span>
                   </p>
                   <p className="text-label-sm text-ink-muted">

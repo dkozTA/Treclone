@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDeleteAccount } from '@/hooks/profile';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Card,
   CardContent,
@@ -14,30 +17,28 @@ import {
 
 export function DangerZone() {
   const router = useRouter();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [password, setPassword] = useState('');
   const deleteAccountMutation = useDeleteAccount();
 
   const handleDeleteAccount = async () => {
-    if (!confirm('Are you absolutely sure? This cannot be undone.')) {
-      return;
-    }
-
     setIsDeleting(true);
 
-    deleteAccountMutation.mutate(undefined, {
-      onSuccess: async () => {
-        await fetch('/api/auth/logout', { method: 'POST' });
-        router.push('/login');
-      },
-      onError: (error) => {
-        alert(
-          error instanceof Error ? error.message : 'Failed to delete account'
-        );
-      },
-      onSettled: () => {
-        setIsDeleting(false);
-      },
-    });
+    deleteAccountMutation.mutate(
+      { password },
+      {
+        onSuccess: async () => {
+          setShowDeleteConfirm(false);
+          setPassword('');
+          await fetch('/api/auth/logout', { method: 'POST' });
+          router.push('/login');
+        },
+        onSettled: () => {
+          setIsDeleting(false);
+        },
+      }
+    );
   };
 
   return (
@@ -56,7 +57,7 @@ export function DangerZone() {
           <Button
             variant="destructive"
             className="mt-gap-sm"
-            onClick={handleDeleteAccount}
+            onClick={() => setShowDeleteConfirm(true)}
             disabled={isDeleting || deleteAccountMutation.isPending}
           >
             {isDeleting || deleteAccountMutation.isPending
@@ -65,6 +66,38 @@ export function DangerZone() {
           </Button>
         </div>
       </CardContent>
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete Account"
+        description="This permanently deletes your account and all related data. Enter your password to confirm."
+        confirmLabel="Delete Account"
+        isLoading={isDeleting || deleteAccountMutation.isPending}
+        confirmDisabled={!password.trim()}
+        onOpenChange={(open) => {
+          setShowDeleteConfirm(open);
+          if (!open) {
+            setPassword('');
+          }
+        }}
+        onConfirm={handleDeleteAccount}
+      >
+        <div className="space-y-gap-sm">
+          <Label htmlFor="delete-account-password">Password</Label>
+          <Input
+            id="delete-account-password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            disabled={isDeleting || deleteAccountMutation.isPending}
+            aria-invalid={!!deleteAccountMutation.error}
+          />
+          {deleteAccountMutation.error && (
+            <p className="text-label-sm text-destructive">
+              {deleteAccountMutation.error.message}
+            </p>
+          )}
+        </div>
+      </ConfirmDialog>
     </Card>
   );
 }

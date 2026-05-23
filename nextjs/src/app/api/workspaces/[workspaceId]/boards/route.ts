@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { BoardController } from '@/lib/controllers/board.controller'
 import { verifyTokenFromCookie } from '@/lib/utils/auth'
-import { errorResponse } from '@/lib/utils/api-utils'
+import { unauthorized } from '@/lib/utils/api-utils'
 
 const controller = new BoardController()
 
@@ -13,7 +13,7 @@ export async function GET(
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
-        return errorResponse('Unauthorized', 401)
+        return unauthorized()
     }
 
     return controller.getBoards(request, BigInt(workspaceId), userId)
@@ -27,7 +27,7 @@ export async function POST(
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
-        return errorResponse('Unauthorized', 401)
+        return unauthorized()
     }
 
     return controller.createBoard(request, BigInt(workspaceId), userId)

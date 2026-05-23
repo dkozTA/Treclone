@@ -1,5 +1,5 @@
 import { WorkspaceMemberRepository } from '@/lib/repositories/workspace-member.repository'
-import { addMemberSchema, removeMemberSchema } from '@/lib/validation/members'
+import { addMemberSchema, removeMemberSchema } from '@/lib/validation/membership'
 import { AuthError, AuthErrorCode } from '@/lib/utils/error-handler'
 import prisma from '@/lib/db/prisma'
 

@@ -4,6 +4,7 @@ import { useEffect, useState, use } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
   Card,
   CardContent,
@@ -19,7 +20,7 @@ import { useDeleteWorkspace } from '@/hooks/workspace';
 import {
   updateWorkspaceSettingsSchema,
   type UpdateWorkspaceSettingsInput,
-} from '@/lib/validation/workspace';
+} from '@/lib/validation/workspace-settings';
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -151,40 +152,18 @@ export default function WorkspaceSettingsPage({
         </CardContent>
       </Card>
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle className="text-destructive">
-                Delete Workspace?
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-gap-lg">
-              <p className="text-body text-ink">
-                Are you absolutely sure? This action cannot be undone.
-              </p>
-              <div className="flex gap-gap-md">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setShowDeleteConfirm(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="destructive"
-                  className="flex-1"
-                  onClick={() => deleteMutation.mutate()}
-                  disabled={deleteMutation.isPending}
-                >
-                  {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete Workspace"
+        description="Delete this workspace? This will permanently delete its boards, lists, and cards."
+        isLoading={deleteMutation.isPending}
+        onOpenChange={setShowDeleteConfirm}
+        onConfirm={() => {
+          deleteMutation.mutate(undefined, {
+            onSuccess: () => setShowDeleteConfirm(false),
+          });
+        }}
+      />
     </main>
   );
 }

@@ -1,14 +1,8 @@
-// Auth
-export * from './auth'
-
-// Workspace
-export * from './workspace'
-
-// Board
-export * from './board'
-
-// List
-export * from './list'
-
-// Card
-export * from './card'
+export * from './auth';
+export * from './workspace';
+export * from './workspace-settings';
+export * from './settings';
+export * from './membership';
+export * from './board';
+export * from './list';
+export * from './card';

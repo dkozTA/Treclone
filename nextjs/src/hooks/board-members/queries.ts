@@ -2,34 +2,50 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-interface BoardMember {
+export type BoardMemberRole = 'admin' | 'editor' | 'viewer';
+
+export interface BoardMember {
     id: string;
     userId: string;
     boardId: string;
-    role: 'admin' | 'editor' | 'viewer';
+    role: BoardMemberRole;
     user: {
         id: string;
         email: string;
-        name: string;
+        fullName: string;
     };
-    createdAt: string;
-    updatedAt: string;
+    joinedAt: string;
 }
 
-interface FetchBoardMembersResponse {
+export interface BoardMembersResponse {
     success: boolean;
     data: BoardMember[];
 }
 
-interface FetchBoardMemberResponse {
-    success: boolean;
-    data: BoardMember;
+export const boardMembersQueryKey = (
+    workspaceId: string,
+    boardId: string
+) => ['board-members', workspaceId, boardId] as const;
+
+function normalizeBoardMember(member: any): BoardMember {
+    return {
+        id: String(member.id),
+        userId: String(member.userId),
+        boardId: String(member.boardId),
+        role: member.role,
+        user: {
+            id: String(member.user?.id ?? ''),
+            email: String(member.user?.email ?? ''),
+            fullName: String(member.user?.fullName ?? member.user?.name ?? ''),
+        },
+        joinedAt: String(member.joinedAt ?? member.createdAt ?? new Date().toISOString()),
+    };
 }
 
-// Fetch all board members
 export function useBoardMembers(workspaceId: string, boardId: string) {
-    return useQuery<FetchBoardMembersResponse, Error>({
-        queryKey: ['board-members', workspaceId, boardId],
+    return useQuery<BoardMembersResponse, Error>({
+        queryKey: boardMembersQueryKey(workspaceId, boardId),
+        enabled: !!workspaceId && !!boardId,
         queryFn: async () => {
             const response = await fetch(
                 `/api/workspaces/${workspaceId}/boards/${boardId}/members`,
@@ -50,44 +66,10 @@ export function useBoardMembers(workspaceId: string, boardId: string) {
 
             return {
                 success: !!json.success,
-                data: Array.isArray(json?.data?.members) ? json.data.members : [],
+                data: Array.isArray(json?.data?.members)
+                    ? json.data.members.map(normalizeBoardMember)
+                    : [],
             };
         },
-        enabled: !!workspaceId && !!boardId,
-    });
-}
-
-// Fetch single board member (if needed)
-export function useBoardMember(
-    workspaceId: string,
-    boardId: string,
-    memberId: string
-) {
-    return useQuery<FetchBoardMemberResponse, Error>({
-        queryKey: ['board-member', workspaceId, boardId, memberId],
-        queryFn: async () => {
-            const response = await fetch(
-                `/api/workspaces/${workspaceId}/boards/${boardId}/members/${memberId}`,
-                {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                }
-            );
-
-            const json = await response.json();
-
-            if (!response.ok) {
-                throw new Error(json.error || json.message || 'Failed to fetch board member');
-            }
-
-            return {
-                success: !!json.success,
-                data: json?.data?.member ?? json?.data,
-            };
-        },
-        enabled: !!workspaceId && !!boardId && !!memberId,
     });
 }

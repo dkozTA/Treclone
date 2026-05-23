@@ -8,9 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Search, CalendarDays, Tag } from 'lucide-react';
-import Link from 'next/link';
+import { Search, CalendarDays, Tag } from 'lucide-react';
 import { CardEditModal } from './_components/card-edit-modal';
+import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
 
 interface CardItem {
   id: string;
@@ -54,11 +54,10 @@ export default function CardsPage() {
   if (isLoading) {
     return (
       <main className="mx-auto max-w-6xl space-y-gap-lg px-gap-md py-gap-lg">
-        <div className="flex items-center gap-gap-md">
-          <Button variant="ghost" size="icon-sm" disabled>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <Skeleton className="h-8 w-48" />
+        <div className="flex flex-col gap-gap-md md:flex-row md:items-start md:justify-between">
+          <div className="flex items-center gap-gap-md">
+            <Skeleton className="h-8 w-48" />
+          </div>
         </div>
 
         <Skeleton className="h-11 w-full max-w-md" />
@@ -92,19 +91,15 @@ export default function CardsPage() {
   if (error) {
     return (
       <main className="mx-auto max-w-6xl space-y-gap-lg px-gap-md py-gap-lg">
-        <div className="flex items-center gap-gap-md">
-          <Button variant="ghost" size="icon-sm" asChild>
-            <Link href={`/workspaces/${workspaceId}/boards/${boardId}`}>
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-headline-lg font-heading text-ink">Cards</h1>
-            <p className="text-body text-destructive">
+        <DashboardPageHeader
+          title="Cards"
+          description={
+            <span className="text-destructive">
               Failed to load cards: {error.message}
-            </p>
-          </div>
-        </div>
+            </span>
+          }
+          backHref={`/workspaces/${workspaceId}/boards/${boardId}`}
+        />
       </main>
     );
   }
@@ -112,20 +107,11 @@ export default function CardsPage() {
   return (
     <>
       <main className="mx-auto max-w-6xl space-y-gap-lg px-gap-md py-gap-lg">
-        <div className="flex items-center gap-gap-md">
-          <Button variant="ghost" size="icon-sm" asChild>
-            <Link href={`/workspaces/${workspaceId}/boards/${boardId}`}>
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-
-          <div>
-            <h1 className="text-headline-lg font-heading text-ink">Cards</h1>
-            <p className="text-body text-ink-muted">
-              Browse all cards in this board
-            </p>
-          </div>
-        </div>
+        <DashboardPageHeader
+          title="Cards"
+          description="Browse all cards in this board"
+          backHref={`/workspaces/${workspaceId}/boards/${boardId}`}
+        />
 
         <div className="relative max-w-md">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />

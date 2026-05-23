@@ -1,24 +1,60 @@
-'use client'
+'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+    boardMembersQueryKey,
+    type BoardMember,
+    type BoardMemberRole,
+    type BoardMembersResponse,
+} from './queries';
 
-interface AddMemberInput {
-    userId: string
-    role: 'admin' | 'editor' | 'viewer'
+interface AddBoardMemberInput {
+    email: string;
+    role: BoardMemberRole;
 }
 
-interface UpdateMemberInput {
-    role: 'admin' | 'editor' | 'viewer'
+interface RemoveBoardMemberInput {
+    memberId: string;
 }
 
-export function useAddBoardMember(
-    workspaceId: string,
-    boardId: string
-) {
-    const queryClient = useQueryClient()
+function normalizeBoardMember(member: any): BoardMember {
+    return {
+        id: String(member.id),
+        userId: String(member.userId),
+        boardId: String(member.boardId),
+        role: member.role,
+        user: {
+            id: String(member.user?.id ?? ''),
+            email: String(member.user?.email ?? ''),
+            fullName: String(member.user?.fullName ?? member.user?.name ?? ''),
+        },
+        joinedAt: String(member.joinedAt ?? member.createdAt ?? new Date().toISOString()),
+    };
+}
 
-    return useMutation({
-        mutationFn: async (data: AddMemberInput) => {
+function createTempMember(email: string, boardId: string, role: BoardMemberRole): BoardMember {
+    const now = new Date().toISOString();
+
+    return {
+        id: `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        userId: 'pending',
+        boardId,
+        role,
+        user: {
+            id: 'pending',
+            email,
+            fullName: email.split('@')[0] || email,
+        },
+        joinedAt: now,
+    };
+}
+
+export function useAddBoardMember(workspaceId: string, boardId: string) {
+    const queryClient = useQueryClient();
+    const queryKey = boardMembersQueryKey(workspaceId, boardId);
+
+    return useMutation<BoardMember, Error, AddBoardMemberInput, { previous?: BoardMembersResponse; tempId: string }>({
+        mutationFn: async (data) => {
             const response = await fetch(
                 `/api/workspaces/${workspaceId}/boards/${boardId}/members`,
                 {
@@ -29,84 +65,95 @@ export function useAddBoardMember(
                     credentials: 'include',
                     body: JSON.stringify(data),
                 }
-            )
+            );
+
+            const json = await response.json();
 
             if (!response.ok) {
-                const error = await response.json()
-                throw new Error(error.message || 'Failed to add board member')
+                throw new Error(json.message || json.error || 'Failed to add board member');
             }
 
-            return response.json()
+            return normalizeBoardMember(json?.data?.member ?? json?.data);
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['board-members', workspaceId, boardId] })
+        onMutate: async (data) => {
+            await queryClient.cancelQueries({ queryKey });
+
+            const previous = queryClient.getQueryData<BoardMembersResponse>(queryKey);
+            const tempMember = createTempMember(data.email, boardId, data.role);
+
+            queryClient.setQueryData<BoardMembersResponse>(queryKey, (current) => ({
+                success: current?.success ?? true,
+                data: [tempMember, ...(current?.data ?? [])],
+            }));
+
+            return { previous, tempId: tempMember.id };
         },
-    })
-}
-
-export function useUpdateBoardMember(
-    workspaceId: string,
-    boardId: string,
-    memberId: string
-) {
-    const queryClient = useQueryClient()
-
-    return useMutation({
-        mutationFn: async (data: UpdateMemberInput) => {
-            const response = await fetch(
-                `/api/workspaces/${workspaceId}/boards/${boardId}/members/${memberId}`,
-                {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify(data),
+        onError: (_error, _variables, context) => {
+            if (context?.previous) {
+                queryClient.setQueryData(queryKey, context.previous);
+            }
+        },
+        onSuccess: (member, _variables, context) => {
+            queryClient.setQueryData<BoardMembersResponse>(queryKey, (current) => {
+                if (!current) {
+                    return { success: true, data: [member] };
                 }
-            )
 
-            if (!response.ok) {
-                const error = await response.json()
-                throw new Error(error.message || 'Failed to update board member')
-            }
-
-            return response.json()
+                return {
+                    ...current,
+                    data: current.data.map((item) => (item.id === context?.tempId ? member : item)),
+                };
+            });
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['board-members', workspaceId, boardId] })
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey });
         },
-    })
+    });
 }
 
-export function useRemoveBoardMember(
-    workspaceId: string,
-    boardId: string,
-    memberId: string
-) {
-    const queryClient = useQueryClient()
+export function useRemoveBoardMember(workspaceId: string, boardId: string) {
+    const queryClient = useQueryClient();
+    const queryKey = boardMembersQueryKey(workspaceId, boardId);
 
-    return useMutation({
-        mutationFn: async () => {
+    return useMutation<void, Error, RemoveBoardMemberInput, { previous?: BoardMembersResponse }>({
+        mutationFn: async (data) => {
             const response = await fetch(
-                `/api/workspaces/${workspaceId}/boards/${boardId}/members/${memberId}`,
+                `/api/workspaces/${workspaceId}/boards/${boardId}/members`,
                 {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     credentials: 'include',
+                    body: JSON.stringify({ memberId: data.memberId }),
                 }
-            )
+            );
+
+            const json = await response.json();
 
             if (!response.ok) {
-                const error = await response.json()
-                throw new Error(error.message || 'Failed to remove board member')
+                throw new Error(json.message || json.error || 'Failed to remove board member');
             }
+        },
+        onMutate: async ({ memberId }) => {
+            await queryClient.cancelQueries({ queryKey });
 
-            return response.json()
+            const previous = queryClient.getQueryData<BoardMembersResponse>(queryKey);
+
+            queryClient.setQueryData<BoardMembersResponse>(queryKey, (current) => ({
+                success: current?.success ?? true,
+                data: (current?.data ?? []).filter((member) => member.id !== memberId),
+            }));
+
+            return { previous };
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['board-members', workspaceId, boardId] })
+        onError: (_error, _variables, context) => {
+            if (context?.previous) {
+                queryClient.setQueryData(queryKey, context.previous);
+            }
         },
-    })
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey });
+        },
+    });
 }

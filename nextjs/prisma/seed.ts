@@ -1,4 +1,4 @@
-import { PrismaClient, User, Workspace, Board, List } from './generated/client'
+import { PrismaClient, User, Workspace, Board, List } from './generated/client/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { faker } from '@faker-js/faker'
 import * as bcrypt from 'bcryptjs'

@@ -1,5 +1,7 @@
 import { ThemeToggle } from '@/components/theme-toggle';
 import React from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export default function MarketingLayout({
   children,
@@ -12,7 +14,18 @@ export default function MarketingLayout({
       <header className="bg-canvas border-b border-surface-1 p-gap-xl sticky top-0 z-50">
         <div className="max-w-7xl mx-auto">
           <nav className="flex items-center justify-between">
-            <h1 className="text-headline-lg font-heading text-ink">Treclone</h1>
+            <Link href="/" className="flex items-center">
+              <span className="inline-flex items-center justify-center rounded-full bg-surface-2">
+                <Image
+                  src="/logo.png"
+                  alt="Treclone"
+                  width={190}
+                  height={44}
+                  className="h-9 w-auto object-contain"
+                  priority
+                />
+              </span>
+            </Link>
             <div className="flex gap-gap-md items-center">
               {/* Navigation links can go here */}
             </div>

@@ -58,7 +58,8 @@ export class ListController {
                     {
                         message: 'List created successfully',
                         list: convertBigIntToString(list),
-                    }
+                    },
+                    201
                 ),
                 { status: 201 }
             )

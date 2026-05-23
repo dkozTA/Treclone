@@ -1,48 +1,48 @@
 import { NextRequest } from 'next/server'
 import { WorkspaceSettingsController } from '@/lib/controllers/workspace-settings.controller'
 import { verifyTokenFromCookie } from '@/lib/utils/auth'
-import { errorResponse } from '@/lib/utils/api-utils'
+import { unauthorized } from '@/lib/utils/api-utils'
 
 const controller = new WorkspaceSettingsController()
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { workspaceId: string } }
+    { params }: { params: Promise<{ workspaceId: string }> }
 ) {
+    const { workspaceId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
-        return errorResponse('Unauthorized', 401)
+        return unauthorized()
     }
 
-    const workspaceId = BigInt(params.workspaceId)
-    return controller.getSettings(request, workspaceId, userId)
+    return controller.getSettings(request, BigInt(workspaceId), userId)
 }
 
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { workspaceId: string } }
+    { params }: { params: Promise<{ workspaceId: string }> }
 ) {
+    const { workspaceId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
-        return errorResponse('Unauthorized', 401)
+        return unauthorized()
     }
 
-    const workspaceId = BigInt(params.workspaceId)
-    return controller.updateSettings(request, workspaceId, userId)
+    return controller.updateSettings(request, BigInt(workspaceId), userId)
 }
 
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { workspaceId: string } }
+    { params }: { params: Promise<{ workspaceId: string }> }
 ) {
+    const { workspaceId } = await params
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
-        return errorResponse('Unauthorized', 401)
+        return unauthorized()
     }
 
-    const workspaceId = BigInt(params.workspaceId)
-    return controller.deleteWorkspace(request, workspaceId, userId)
+    return controller.deleteWorkspace(request, BigInt(workspaceId), userId)
 }

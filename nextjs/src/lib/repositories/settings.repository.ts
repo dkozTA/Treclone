@@ -1,63 +1,72 @@
-import prisma from '@/lib/db/prisma'
+import prisma from '@/lib/db/prisma';
 
 export class SettingsRepository {
-    // User preferences
-    async getUserPreferences(userId: bigint) {
-        return prisma.user.findUnique({
-            where: { id: userId },
-            select: {
-                id: true,
-                email: true,
-                fullName: true,
-                // Add darkMode when schema is updated
-            },
-        })
-    }
+  // User preferences
+  async getUserPreferences(userId: bigint) {
+    return prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        emailNotifications: true,
+        darkMode: true,
+      },
+    });
+  }
 
-    async updateUserPreferences(
-        userId: bigint,
-        data: {
-            darkMode?: boolean
-        }
-    ) {
-        return prisma.user.update({
-            where: { id: userId },
-            data,
-            select: {
-                id: true,
-                email: true,
-                fullName: true,
-            },
-        })
+  async updateUserPreferences(
+    userId: bigint,
+    data: {
+      emailNotifications?: boolean;
+      darkMode?: boolean;
     }
+  ) {
+    return prisma.user.update({
+      where: { id: userId },
+      data,
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        emailNotifications: true,
+        darkMode: true,
+      },
+    });
+  }
 
-    // Password
-    async getUserPasswordHash(userId: bigint) {
-        return prisma.user.findUnique({
-            where: { id: userId },
-            select: { id: true, passwordHash: true },
-        })
-    }
+  // Password
+  async getUserPasswordHash(userId: bigint) {
+    return prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, passwordHash: true },
+    });
+  }
 
-    async updatePassword(userId: bigint, hashedPassword: string) {
-        return prisma.user.update({
-            where: { id: userId },
-            data: { passwordHash: hashedPassword },
-            select: {
-                id: true,
-                email: true,
-                fullName: true,
-                updatedAt: true,
-            },
-        })
-    }
+  async updatePassword(userId: bigint, hashedPassword: string) {
+    return prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: hashedPassword },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        updatedAt: true,
+      },
+    });
+  }
 
-    // Account deletion
-    async deleteUser(userId: bigint) {
-        // This will cascade delete related records due to Prisma schema
-        return prisma.user.delete({
-            where: { id: userId },
-            select: { id: true, email: true },
-        })
-    }
+  // Account deletion
+  async deleteUser(userId: bigint) {
+    return prisma.$transaction(async (tx) => {
+      await tx.card.deleteMany({
+        where: { createdBy: userId },
+      });
+
+      return tx.user.delete({
+        where: { id: userId },
+        select: { id: true, email: true },
+      });
+    });
+  }
 }

@@ -13,7 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Edit2, AlertCircle } from 'lucide-react';
 import { EditProfileModal } from './_components/edit-profile-modal';
 import ProfileLoading from './loading';
@@ -112,7 +111,7 @@ export default function ProfilePage() {
                   <p className="text-body text-ink-muted">{profile.email}</p>
                 </div>
                 <p className="text-label-sm text-ink-muted">
-                  Account created on{' '}
+                  Account created on
                   {new Date(profile.createdAt).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
@@ -158,16 +157,6 @@ export default function ProfilePage() {
             <p className="text-body text-ink-muted">{profile.email}</p>
           </div>
 
-          {/* Account Status */}
-          <div>
-            <Label className="text-label-sm font-semibold text-ink mb-gap-xs">
-              Account Status
-            </Label>
-            <div className="flex items-center gap-gap-sm">
-              <Badge variant="success">Active</Badge>
-            </div>
-          </div>
-
           {/* Last Updated */}
           <div>
             <Label className="text-label-sm font-semibold text-ink mb-gap-xs">
@@ -181,16 +170,6 @@ export default function ProfilePage() {
                 hour: '2-digit',
                 minute: '2-digit',
               })}
-            </p>
-          </div>
-
-          {/* User ID */}
-          <div>
-            <Label className="text-label-sm font-semibold text-ink mb-gap-xs">
-              User ID
-            </Label>
-            <p className="text-body text-ink-muted font-mono text-xs break-all">
-              {profile.id}
             </p>
           </div>
         </CardContent>

@@ -9,6 +9,8 @@ import {
 } from '@/hooks/workspace-members';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
 import { UserPlus, Trash2 } from 'lucide-react';
 
 export default function MembersPage() {
@@ -39,41 +41,36 @@ export default function MembersPage() {
 
   return (
     <main className="max-w-4xl mx-auto space-y-gap-lg">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-headline-lg font-heading text-ink">
-            Team Members
-          </h1>
-          <p className="text-body text-ink-muted">
-            Manage workspace members and permissions
-          </p>
-        </div>
-
-        <div className="flex items-center gap-gap-sm">
-          <input
-            className="px-gap-md py-gap-sm border border-hairline-ghost rounded-sm"
-            placeholder="member@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <select
-            className="px-gap-md py-gap-sm border border-hairline-ghost rounded-sm text-label-sm"
-            value={role}
-            onChange={(e) => setRole(e.target.value as 'member' | 'admin')}
-          >
-            <option value="member">Member</option>
-            <option value="admin">Admin</option>
-          </select>
-          <Button
-            variant="default"
-            onClick={handleAddMember}
-            disabled={addMemberMutation.isPending}
-          >
-            <UserPlus className="h-4 w-4 mr-gap-sm" />
-            {addMemberMutation.isPending ? 'Adding...' : 'Add Member'}
-          </Button>
-        </div>
-      </div>
+      <DashboardPageHeader
+        title="Team Members"
+        description="Manage workspace members and permissions"
+        actions={
+          <div className="flex flex-wrap items-center gap-gap-sm">
+            <input
+              className="w-full rounded-sm border border-hairline-ghost px-gap-md py-gap-sm md:w-64"
+              placeholder="member@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <select
+              className="rounded-sm border border-hairline-ghost px-gap-md py-gap-sm text-label-sm"
+              value={role}
+              onChange={(e) => setRole(e.target.value as 'member' | 'admin')}
+            >
+              <option value="member">Member</option>
+              <option value="admin">Admin</option>
+            </select>
+            <Button
+              variant="default"
+              onClick={handleAddMember}
+              disabled={addMemberMutation.isPending}
+            >
+              <UserPlus className="h-4 w-4 mr-gap-sm" />
+              {addMemberMutation.isPending ? 'Adding...' : 'Add Member'}
+            </Button>
+          </div>
+        }
+      />
 
       {error && (
         <Card className="border-destructive bg-destructive/5">
@@ -124,35 +121,55 @@ function MemberRow({
     updatedAt: string;
   };
 }>) {
+  const [showConfirm, setShowConfirm] = useState(false);
   const removeMutation = useRemoveWorkspaceMember(workspaceId, member.id);
 
   return (
-    <div className="flex items-center justify-between p-gap-md bg-surface-1 rounded-sm">
-      <div>
-        <p className="text-body text-ink font-medium">{member.user.name}</p>
-        <p className="text-label-sm text-ink-muted">{member.user.email}</p>
-        <p className="text-label-sm text-ink-muted capitalize">{member.role}</p>
-      </div>
+    <>
+      <div className="flex items-center justify-between p-gap-md bg-surface-1 rounded-sm">
+        <div>
+          <p className="text-body text-ink font-medium">{member.user.name}</p>
+          <p className="text-label-sm text-ink-muted">{member.user.email}</p>
+          <p className="text-label-sm text-ink-muted capitalize">
+            {member.role}
+          </p>
+        </div>
 
-      <div className="flex gap-gap-sm">
-        <select
-          className="px-gap-md py-gap-sm border border-hairline-ghost rounded-sm text-label-sm"
-          defaultValue={member.role}
-          disabled
-        >
-          <option value="owner">Owner</option>
-          <option value="admin">Admin</option>
-          <option value="member">Member</option>
-        </select>
+        <div className="flex gap-gap-sm">
+          <select
+            className="px-gap-md py-gap-sm border border-hairline-ghost rounded-sm text-label-sm"
+            defaultValue={member.role}
+            disabled
+          >
+            <option value="owner">Owner</option>
+            <option value="admin">Admin</option>
+            <option value="member">Member</option>
+          </select>
 
-        <button
-          className="text-destructive hover:bg-destructive/5 p-gap-sm rounded-sm"
-          onClick={() => removeMutation.mutate()}
-          disabled={removeMutation.isPending || member.role === 'owner'}
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+          <button
+            className="text-destructive hover:bg-destructive/5 p-gap-sm rounded-sm"
+            onClick={() => setShowConfirm(true)}
+            disabled={removeMutation.isPending || member.role === 'owner'}
+            type="button"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
       </div>
-    </div>
+      <ConfirmDialog
+        open={showConfirm}
+        title="Remove Member"
+        description={`Remove ${member.user.email} from this workspace?`}
+        confirmLabel="Remove"
+        loadingLabel="Removing..."
+        isLoading={removeMutation.isPending}
+        onOpenChange={setShowConfirm}
+        onConfirm={() => {
+          removeMutation.mutate(undefined, {
+            onSuccess: () => setShowConfirm(false),
+          });
+        }}
+      />
+    </>
   );
 }

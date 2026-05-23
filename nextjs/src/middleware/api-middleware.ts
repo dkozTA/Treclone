@@ -20,122 +20,66 @@ export async function apiMiddleware(
     const clientIp = getClientIp(request)
     const { userId } = verifyTokenFromCookie(request)
 
-    // Rate limiting: 100 requests per minute per IP
-    const rateLimitResult = rateLimit(`ip:${clientIp}`, {
-        interval: 60000,
-        maxRequests: 100,
-    })
-
-    const responseHeaders = new Headers(rateLimitHeaders(rateLimitResult))
+    const ipRateLimit = rateLimit(`ip:${clientIp}`, { interval: 60000, maxRequests: 100 })
+    const responseHeaders = new Headers(rateLimitHeaders(ipRateLimit))
     responseHeaders.set('X-Correlation-ID', correlationId)
 
-    if (!rateLimitResult.success) {
-        return NextResponse.json(
-            {
-                success: false,
-                error: 'Rate limit exceeded',
-                errorCode: ErrorCode.RATE_LIMITED,
-                correlationId,
-                retryAfter: rateLimitResult.resetTime,
-            },
-            {
-                status: 429,
-                headers: responseHeaders,
-            }
-        )
-    }
+    const rateLimitResp = respondRateLimitFailure(ipRateLimit, correlationId, responseHeaders)
+    if (rateLimitResp) return rateLimitResp
 
-    // Rate limit per authenticated user: 500 requests per minute
     if (userId) {
-        const userRateLimit = rateLimit(`user:${userId}`, {
-            interval: 60000,
-            maxRequests: 500,
-        })
-
-        if (!userRateLimit.success) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: 'Rate limit exceeded for user',
-                    errorCode: ErrorCode.RATE_LIMITED,
-                    correlationId,
-                },
-                {
-                    status: 429,
-                    headers: responseHeaders,
-                }
-            )
-        }
+        const userRate = rateLimit(`user:${userId}`, { interval: 60000, maxRequests: 500 })
+        const userRateResp = respondRateLimitFailure(userRate, correlationId, responseHeaders, 'Rate limit exceeded for user')
+        if (userRateResp) return userRateResp
     }
 
     const context: ApiMiddlewareContext = {
         correlationId,
         clientIp,
         userId: userId?.toString(),
-        rateLimit: rateLimitResult,
+        rateLimit: ipRateLimit,
     }
 
     try {
         const response = await handler(request, context)
 
-        // Log successful mutation operations
-        if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
+        if (isMutationMethod(request.method)) {
             const entityId = extractEntityId(request.url)
-            const action =
-                request.method === 'POST'
-                    ? AuditAction.CREATE
-                    : request.method === 'DELETE'
-                        ? AuditAction.DELETE
-                        : AuditAction.UPDATE
-
-            if (userId && entityId !== null) {
-                createAuditLog({
-                    userId,
-                    action,
-                    entity: getEntityFromPath(request.url),
-                    entityId,
-                    status: 'SUCCESS',
-                    metadata: {
-                        correlationId,
-                        ipAddress: clientIp,
-                        userAgent: request.headers.get('user-agent') || undefined,
-                    },
-                }).catch(() => { })
-            }
+            await maybeCreateAudit({
+                userId,
+                method: request.method,
+                url: request.url,
+                entityId,
+                status: 'SUCCESS',
+                correlationId,
+                clientIp,
+                userAgent: request.headers.get('user-agent') || undefined,
+            })
         }
 
-        // Add correlation ID to all responses
-        responseHeaders.forEach((value, key) => {
-            response.headers.set(key, value)
-        })
-
+        applyHeadersToResponse(response, responseHeaders)
         return response
     } catch (error) {
-        const errorData = captureException(error, {
+        captureException(error, {
             correlationId,
             endpoint: request.url,
             method: request.method,
             userId: userId?.toString(),
         })
 
-        // Log failed operations
-        if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
+        if (isMutationMethod(request.method)) {
             const entityId = extractEntityId(request.url)
-            if (userId && entityId !== null) {
-                createAuditLog({
-                    userId,
-                    action: AuditAction.UPDATE,
-                    entity: getEntityFromPath(request.url),
-                    entityId,
-                    status: 'FAILURE',
-                    errorMessage: error instanceof Error ? error.message : String(error),
-                    metadata: {
-                        correlationId,
-                        ipAddress: clientIp,
-                        userAgent: request.headers.get('user-agent') || undefined,
-                    },
-                }).catch(() => { })
-            }
+            await maybeCreateAudit({
+                userId,
+                method: request.method,
+                url: request.url,
+                entityId,
+                status: 'FAILURE',
+                errorMessage: error instanceof Error ? error.message : String(error),
+                correlationId,
+                clientIp,
+                userAgent: request.headers.get('user-agent') || undefined,
+            })
         }
 
         return NextResponse.json(
@@ -151,6 +95,81 @@ export async function apiMiddleware(
             }
         )
     }
+}
+
+function respondRateLimitFailure(
+    result: ReturnType<typeof rateLimit>,
+    correlationId: string,
+    headers: Headers,
+    message = 'Rate limit exceeded'
+): NextResponse | null {
+    if (!result || result.success) return null
+    return NextResponse.json(
+        {
+            success: false,
+            error: message,
+            errorCode: ErrorCode.RATE_LIMITED,
+            correlationId,
+            retryAfter: result.resetTime,
+        },
+        { status: 429, headers }
+    )
+}
+
+function isMutationMethod(method: string): boolean {
+    return ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)
+}
+
+function getActionFromMethod(method: string): AuditAction {
+    if (method === 'POST') return AuditAction.CREATE
+    if (method === 'DELETE') return AuditAction.DELETE
+    return AuditAction.UPDATE
+}
+
+async function maybeCreateAudit(input: {
+    userId?: bigint | string | null
+    method: string
+    url: string
+    entityId: bigint | null
+    status: 'SUCCESS' | 'FAILURE'
+    errorMessage?: string
+    correlationId: string
+    clientIp: string
+    userAgent?: string
+}): Promise<void> {
+    if (input.userId == null || !isMutationMethod(input.method) || input.entityId === null) return
+
+    const userIdBigInt: bigint =
+        typeof input.userId === 'bigint' ? input.userId : BigInt(String(input.userId))
+
+    try {
+        await createAuditLog({
+            userId: userIdBigInt,
+            action: getActionFromMethod(input.method),
+            entity: getEntityFromPath(input.url),
+            entityId: input.entityId,
+            status: input.status,
+            errorMessage: input.errorMessage,
+            metadata: {
+                correlationId: input.correlationId,
+                ipAddress: input.clientIp,
+                ...(input.userAgent ? { userAgent: input.userAgent } : {}),
+            },
+        })
+    } catch (e) {
+        console.error('[API Middleware] Failed to create audit log:', e, {
+            correlationId: input.correlationId,
+            url: input.url,
+            status: input.status,
+        })
+    }
+}
+
+function applyHeadersToResponse(response: Response, headers: Headers): void {
+    const respWithHeaders = response as unknown as { headers: Headers }
+    headers.forEach((value, key) => {
+        respWithHeaders.headers.set(key, value)
+    })
 }
 
 function getEntityFromPath(url: string): AuditEntity {

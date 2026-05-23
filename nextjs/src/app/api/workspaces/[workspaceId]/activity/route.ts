@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyTokenFromCookie } from '@/lib/utils/auth';
-import { errorResponse, successResponse } from '@/lib/utils/api-utils';
+import { errorResponse, successResponse, unauthorized } from '@/lib/utils/api-utils';
 import prisma from '@/lib/db/prisma';
 
 interface ActivityDisplay {
@@ -9,6 +9,18 @@ interface ActivityDisplay {
     action: string;
     target: string;
     timestamp: string;
+}
+
+interface AuditLogWithUser {
+    id: bigint;
+    action: string;
+    entity: string;
+    metadata: string | null;
+    createdAt: Date;
+    user: {
+        fullName: string;
+        email: string;
+    };
 }
 
 function parseMetadata(metadata: unknown): Record<string, unknown> | null {
@@ -32,9 +44,7 @@ export async function GET(
     const { valid, userId } = verifyTokenFromCookie(request);
 
     if (!valid || !userId) {
-        return NextResponse.json(errorResponse('Unauthorized', 401), {
-            status: 401,
-        });
+        return unauthorized();
     }
 
     try {
@@ -84,7 +94,7 @@ export async function GET(
             take: 50,
         });
 
-        const activities: ActivityDisplay[] = auditLogs.map((log: any) => {
+        const activities: ActivityDisplay[] = (auditLogs as AuditLogWithUser[]).map((log) => {
             let action = '';
             let target = '';
             const metadata = parseMetadata(log.metadata);

@@ -13,6 +13,7 @@ import { KanbanList } from './kanban-list';
 import { AddListButton } from './add-list-button';
 import { AddListModal } from './add-list-modal';
 import { AddCardModal } from './add-card-modal';
+import { DashboardPageHeader } from '@/components/dashboard/dashboard-page-header';
 
 interface CardItem {
   id: string;
@@ -267,7 +268,10 @@ export function KanbanBoard({
   if (listsLoading) {
     return (
       <div className="space-y-gap-lg">
-        <Skeleton className="h-12 w-64" />
+        <div className="flex flex-col gap-gap-md md:flex-row md:items-start md:justify-between">
+          <Skeleton className="h-12 w-64" />
+          <Skeleton className="h-10 w-32" />
+        </div>
         <div className="grid grid-cols-1 gap-gap-lg md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {[1, 2, 3].map((i) => (
             <div key={`skeleton-${i}`} className="space-y-gap-md">
@@ -282,17 +286,19 @@ export function KanbanBoard({
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <h1 className="text-headline-lg font-heading text-ink">Board</h1>
-        <Button
-          variant="default"
-          onClick={() => setShowAddListModal(true)}
-          disabled={createListMutation.isPending}
-        >
-          <Plus className="h-4 w-4 mr-gap-sm" />
-          Add List
-        </Button>
-      </div>
+      <DashboardPageHeader
+        title="Board"
+        actions={
+          <Button
+            variant="default"
+            onClick={() => setShowAddListModal(true)}
+            disabled={createListMutation.isPending}
+          >
+            <Plus className="h-4 w-4 mr-gap-sm" />
+            Add List
+          </Button>
+        }
+      />
 
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 gap-gap-lg md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">

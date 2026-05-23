@@ -50,7 +50,8 @@ export class WorkspaceController {
                     {
                         message: 'Workspace created successfully',
                         workspace: convertBigIntToString(workspace),
-                    }
+                    },
+                    201
                 ),
                 { status: 201 }
             )

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { CardController } from '@/lib/controllers/card.controller'
 import { verifyTokenFromCookie } from '@/lib/utils/auth'
-import { errorResponse } from '@/lib/utils/api-utils'
+import { unauthorized } from '@/lib/utils/api-utils'
 
 const controller = new CardController()
 
@@ -13,7 +13,7 @@ export async function PATCH(
     const { valid, userId } = verifyTokenFromCookie(request)
 
     if (!valid || !userId) {
-        return errorResponse('Unauthorized', 401)
+        return unauthorized()
     }
 
     return controller.moveCard(request, BigInt(cardId), userId)

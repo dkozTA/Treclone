@@ -5,13 +5,22 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUpdateCard, useDeleteCard } from '@/hooks/cards';
 import { useBoardMembers } from '@/hooks/board-members';
-import { updateCardSchema, type UpdateCardInput } from '@/lib/validation/card';
 import { AlertCircle, Loader2 } from 'lucide-react';
+import { z } from 'zod';
+
+const updateCardFormSchema = z.object({
+  title: z.string().min(1, 'Card title is required').max(255).optional(),
+  description: z.string().max(1000).optional(),
+  assigneeUserId: z.string().optional(),
+});
+
+type UpdateCardFormInput = z.infer<typeof updateCardFormSchema>;
 
 interface CardDetailFormProps {
   workspaceId: string;
@@ -27,16 +36,6 @@ interface CardDetailFormProps {
   };
   onSuccess?: () => void;
   onCancel?: () => void;
-}
-
-function toBigIntOrUndefined(value?: string) {
-  if (!value) return undefined;
-
-  try {
-    return BigInt(value);
-  } catch {
-    return undefined;
-  }
 }
 
 export function CardDetailForm({
@@ -72,12 +71,12 @@ export function CardDetailForm({
     setValue,
     watch,
     reset,
-  } = useForm<UpdateCardInput>({
-    resolver: zodResolver(updateCardSchema),
+  } = useForm<UpdateCardFormInput>({
+    resolver: zodResolver(updateCardFormSchema),
     defaultValues: {
       title: card.title,
       description: card.description || '',
-      assigneeUserId: toBigIntOrUndefined(card.assigneeId),
+      assigneeUserId: card.assigneeId || '',
     },
   });
 
@@ -85,14 +84,14 @@ export function CardDetailForm({
     reset({
       title: card.title,
       description: card.description || '',
-      assigneeUserId: toBigIntOrUndefined(card.assigneeId),
+      assigneeUserId: card.assigneeId || '',
     });
     setShowDeleteConfirm(false);
   }, [card, reset]);
 
   const assigneeId = watch('assigneeUserId');
   const members = Array.isArray(membersData?.data) ? membersData.data : [];
-  const onSubmit = (formData: UpdateCardInput) => {
+  const onSubmit = (formData: UpdateCardFormInput) => {
     updateMutation.mutate(formData, {
       onSuccess: () => {
         onSuccess?.();
@@ -174,18 +173,14 @@ export function CardDetailForm({
                   className="w-full px-gap-md py-gap-sm border border-hairline-ghost rounded-sm text-body font-body disabled:opacity-50"
                   value={assigneeId?.toString() || ''}
                   onChange={(e) => {
-                    if (e.target.value) {
-                      setValue('assigneeUserId', BigInt(e.target.value));
-                    } else {
-                      setValue('assigneeUserId', undefined);
-                    }
+                    setValue('assigneeUserId', e.target.value);
                   }}
                   disabled={isLoading}
                 >
                   <option value="">Unassigned</option>
                   {members.map((member) => (
                     <option key={member.userId} value={member.userId}>
-                      {member.user.name}
+                      {member.user.fullName}
                     </option>
                   ))}
                 </select>
@@ -217,62 +212,33 @@ export function CardDetailForm({
         </CardContent>
       </Card>
 
-      {!showDeleteConfirm && (
-        <Card className="border-destructive/20">
-          <CardHeader>
-            <CardTitle className="text-destructive">Delete Card</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-label-sm text-ink-muted mb-gap-md">
-              This action cannot be undone. The card will be permanently
-              deleted.
-            </p>
-            <Button
-              variant="destructive"
-              onClick={() => setShowDeleteConfirm(true)}
-              disabled={isLoading}
-            >
-              Delete Card
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      <Card className="border-destructive/20">
+        <CardHeader>
+          <CardTitle className="text-destructive">Delete Card</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-label-sm text-ink-muted mb-gap-md">
+            This action cannot be undone. The card will be permanently deleted.
+          </p>
+          <Button
+            variant="destructive"
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={isLoading}
+          >
+            Delete Card
+          </Button>
+        </CardContent>
+      </Card>
 
-      {showDeleteConfirm && (
-        <Card className="border-destructive">
-          <CardHeader>
-            <CardTitle className="text-destructive">
-              Confirm Delete Card?
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-gap-lg">
-            <p className="text-body text-ink">
-              Are you absolutely sure? This action cannot be undone.
-            </p>
-            <div className="flex gap-gap-md">
-              <Button
-                variant="outline"
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={isLoading}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleDelete}
-                disabled={isLoading}
-                className="flex-1 flex items-center justify-center gap-gap-sm"
-              >
-                {deleteMutation.isPending && (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                )}
-                Delete Card
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete Card"
+        description={`Delete "${card.title}"? This action cannot be undone.`}
+        confirmLabel="Delete Card"
+        isLoading={deleteMutation.isPending}
+        onOpenChange={setShowDeleteConfirm}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

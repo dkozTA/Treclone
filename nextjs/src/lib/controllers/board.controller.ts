@@ -58,7 +58,8 @@ export class BoardController {
                     {
                         message: 'Board created successfully',
                         board: convertBigIntToString(board),
-                    }
+                    },
+                    201
                 ),
                 { status: 201 }
             )
