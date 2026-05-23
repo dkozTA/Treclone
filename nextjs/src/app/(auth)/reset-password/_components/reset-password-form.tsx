@@ -16,7 +16,7 @@ import { useResetPassword } from '@/hooks/auth/use-reset-password';
 export function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams.get('token');
+  const token = searchParams?.get('token') ?? '';
 
   const { mutate: resetPassword, isPending: isLoading } = useResetPassword();
   const [apiError, setApiError] = React.useState<string | null>(null);
@@ -28,7 +28,7 @@ export function ResetPasswordForm() {
   } = useForm<ResetPasswordInput>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
-      token: token || '',
+      token,
     },
   });
 
