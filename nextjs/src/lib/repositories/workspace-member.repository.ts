@@ -2,7 +2,22 @@ import prisma from '@/lib/db/prisma'
 
 export class WorkspaceMemberRepository {
     async getWorkspaceMembers(workspaceId: bigint) {
-        return prisma.workspaceMember.findMany({
+        const workspace = await prisma.workspace.findUnique({
+            where: { id: workspaceId },
+            select: {
+                owner: {
+                    select: {
+                        id: true,
+                        email: true,
+                        fullName: true,
+                    },
+                },
+                createdAt: true,
+                updatedAt: true,
+            },
+        })
+
+        const members = await prisma.workspaceMember.findMany({
             where: { workspaceId },
             select: {
                 id: true,
@@ -20,6 +35,24 @@ export class WorkspaceMemberRepository {
             },
             orderBy: { joinedAt: 'desc' },
         })
+
+        if (!workspace) return members
+
+        const nonOwnerMembers = members.filter(
+            (member) => member.userId !== workspace.owner.id
+        )
+
+        return [
+            {
+                id: `owner-${workspace.owner.id.toString()}`,
+                userId: workspace.owner.id,
+                workspaceId,
+                role: 'owner',
+                joinedAt: workspace.createdAt,
+                user: workspace.owner,
+            },
+            ...nonOwnerMembers,
+        ]
     }
 
     async getMemberById(memberId: bigint) {

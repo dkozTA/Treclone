@@ -3,7 +3,16 @@ import prisma from '@/lib/db/prisma'
 export class WorkspaceRepository {
     async getWorkspacesByUserId(userId: bigint) {
         return prisma.workspace.findMany({
-            where: { ownerId: userId },
+            where: {
+                OR: [
+                    { ownerId: userId },
+                    {
+                        members: {
+                            some: { userId },
+                        },
+                    },
+                ],
+            },
             select: {
                 id: true,
                 name: true,

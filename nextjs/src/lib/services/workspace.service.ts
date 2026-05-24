@@ -23,9 +23,14 @@ export class WorkspaceService {
                 )
             }
 
-            if (workspace.ownerId !== userId) {
+            const member = await prisma.workspaceMember.findFirst({
+                where: { workspaceId, userId },
+                select: { id: true },
+            })
+
+            if (workspace.ownerId !== userId && !member) {
                 throw new AuthError(
-                    'Forbidden - not the workspace owner',
+                    'Forbidden - you do not have access to this workspace',
                     403,
                     AuthErrorCode.FORBIDDEN
                 )

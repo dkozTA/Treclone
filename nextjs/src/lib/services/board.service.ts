@@ -21,9 +21,14 @@ export class BoardService {
                 )
             }
 
-            if (workspace.ownerId !== userId) {
+            const member = await prisma.workspaceMember.findFirst({
+                where: { workspaceId, userId },
+                select: { id: true },
+            })
+
+            if (workspace.ownerId !== userId && !member) {
                 throw new AuthError(
-                    'Forbidden - not the workspace owner',
+                    'Forbidden - you do not have access to this workspace',
                     403,
                     AuthErrorCode.FORBIDDEN
                 )
@@ -49,9 +54,16 @@ export class BoardService {
                 throw new AuthError('Board not found', 404, AuthErrorCode.USER_NOT_FOUND)
             }
 
-            if (board.ownerId !== userId) {
+            const member = board.workspaceId
+                ? await prisma.workspaceMember.findFirst({
+                    where: { workspaceId: board.workspaceId, userId },
+                    select: { id: true },
+                })
+                : null
+
+            if (board.ownerId !== userId && !member) {
                 throw new AuthError(
-                    'Forbidden - you do not own this board',
+                    'Forbidden - you do not have access to this board',
                     403,
                     AuthErrorCode.FORBIDDEN
                 )

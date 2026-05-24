@@ -39,6 +39,9 @@ export function useAddWorkspaceMember(workspaceId: string) {
             queryClient.invalidateQueries({
                 queryKey: ['workspace-members', workspaceId],
             })
+            queryClient.invalidateQueries({
+                queryKey: ['workspaces'],
+            })
         },
     })
 }
@@ -110,6 +113,9 @@ export function useRemoveWorkspaceMember(
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: ['workspace-members', workspaceId],
+            })
+            queryClient.invalidateQueries({
+                queryKey: ['workspaces'],
             })
         },
     })

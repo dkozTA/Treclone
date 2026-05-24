@@ -47,7 +47,38 @@ export function useWorkspaceMembers(workspaceId: string) {
             }
 
             const json = await response.json()
-            return json.data
+            const members = json.data?.members ?? []
+
+            return {
+                success: json.success,
+                data: members.map((member: {
+                    id: string
+                    userId: string
+                    workspaceId: string
+                    role: 'owner' | 'admin' | 'member'
+                    joinedAt?: string
+                    createdAt?: string
+                    updatedAt?: string
+                    user: {
+                        id: string
+                        email: string
+                        fullName?: string
+                        name?: string
+                    }
+                }) => ({
+                    id: member.id,
+                    userId: member.userId,
+                    workspaceId: member.workspaceId,
+                    role: member.role,
+                    user: {
+                        id: member.user.id,
+                        email: member.user.email,
+                        name: member.user.name ?? member.user.fullName ?? member.user.email,
+                    },
+                    createdAt: member.createdAt ?? member.joinedAt ?? new Date().toISOString(),
+                    updatedAt: member.updatedAt ?? member.joinedAt ?? new Date().toISOString(),
+                })),
+            }
         },
         enabled: !!workspaceId,
     })
