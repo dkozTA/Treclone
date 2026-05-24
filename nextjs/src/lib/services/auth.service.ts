@@ -6,6 +6,8 @@ import {
     registerSchema,
     forgotPasswordSchema,
     resetPasswordSchema,
+    resendVerificationSchema,
+    verifyEmailSchema,
 } from '@/lib/validation/auth'
 import { AuthRepository } from '@/lib/repositories/auth.repository'
 import { JWT_SECRET } from '@/lib/utils/auth'
@@ -14,13 +16,20 @@ import { AuthError, AuthErrorCode } from '@/lib/utils/error-handler'
 export class AuthService {
     private readonly repository = new AuthRepository();
 
+    private createVerificationToken() {
+        const token = crypto.randomBytes(32).toString('hex')
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex')
+        return { token, hashedToken }
+    }
+
     async register(credentials: unknown) {
         try {
             // Validate input
             const validatedData = registerSchema.parse(credentials)
+            const email = validatedData.email.toLowerCase()
 
             // Check if user exists
-            const existingUser = await this.repository.findUserByEmail(validatedData.email)
+            const existingUser = await this.repository.findUserByEmail(email)
             if (existingUser) {
                 throw new AuthError(
                     'Email already registered',
@@ -31,15 +40,18 @@ export class AuthService {
 
             // Hash password
             const hashedPassword = await bcrypt.hash(validatedData.password, 10)
+            const { token, hashedToken } = this.createVerificationToken()
 
             // Create user
             const user = await this.repository.createUser(
-                validatedData.email,
+                email,
                 hashedPassword,
-                validatedData.fullName
+                validatedData.fullName,
+                hashedToken,
+                new Date(Date.now() + 24 * 60 * 60 * 1000)
             )
 
-            return user
+            return { user, verificationToken: token }
         } catch (error) {
             if (error instanceof AuthError) throw error
             throw new AuthError(
@@ -54,9 +66,10 @@ export class AuthService {
         try {
             // Validate input
             const validatedData = loginSchema.parse(credentials)
+            const email = validatedData.email.toLowerCase()
 
             // Find user
-            const user = await this.repository.findUserByEmail(validatedData.email)
+            const user = await this.repository.findUserByEmail(email)
             if (!user) {
                 throw new AuthError(
                     'Invalid email or password',
@@ -75,6 +88,14 @@ export class AuthService {
                     'Invalid email or password',
                     401,
                     AuthErrorCode.INVALID_CREDENTIALS
+                )
+            }
+
+            if (!user.emailVerifiedAt) {
+                throw new AuthError(
+                    'Please verify your email before logging in',
+                    403,
+                    AuthErrorCode.EMAIL_NOT_VERIFIED
                 )
             }
 
@@ -198,9 +219,10 @@ export class AuthService {
         try {
             // Validate input
             const validatedData = forgotPasswordSchema.parse(credentials)
+            const email = validatedData.email.toLowerCase()
 
             // Find user by email
-            const user = await this.repository.findUserByEmail(validatedData.email)
+            const user = await this.repository.findUserByEmail(email)
 
             // Always return success (prevent email enumeration)
             if (!user) {
@@ -213,7 +235,7 @@ export class AuthService {
 
             // Store token and expiry in database (1 hour)
             await this.repository.updatePasswordResetToken(
-                validatedData.email,
+                email,
                 hashedToken,
                 new Date(Date.now() + 60 * 60 * 1000)
             )
@@ -261,6 +283,64 @@ export class AuthService {
         } catch (error) {
             if (error instanceof AuthError) throw error
             throw new AuthError('Password reset failed', 500, AuthErrorCode.INTERNAL_ERROR)
+        }
+    }
+
+    async verifyEmail(credentials: unknown) {
+        try {
+            const validatedData = verifyEmailSchema.parse(credentials)
+            const hashedToken = crypto
+                .createHash('sha256')
+                .update(validatedData.token)
+                .digest('hex')
+
+            const user = await this.repository.findUserByEmailVerificationToken(hashedToken)
+
+            if (!user) {
+                throw new AuthError(
+                    'Invalid or expired verification token',
+                    400,
+                    AuthErrorCode.INVALID_TOKEN
+                )
+            }
+
+            return this.repository.verifyEmail(user.id)
+        } catch (error) {
+            if (error instanceof AuthError) throw error
+            throw new AuthError('Email verification failed', 500, AuthErrorCode.INTERNAL_ERROR)
+        }
+    }
+
+    async resendVerification(credentials: unknown) {
+        try {
+            const validatedData = resendVerificationSchema.parse(credentials)
+            const email = validatedData.email.toLowerCase()
+            const user = await this.repository.findUserByEmail(email)
+
+            if (!user) {
+                return { userFound: false, alreadyVerified: false, verificationToken: null }
+            }
+
+            if (user.emailVerifiedAt) {
+                return { userFound: true, alreadyVerified: true, verificationToken: null }
+            }
+
+            const { token, hashedToken } = this.createVerificationToken()
+
+            await this.repository.updateEmailVerificationToken(
+                email,
+                hashedToken,
+                new Date(Date.now() + 24 * 60 * 60 * 1000)
+            )
+
+            return { userFound: true, alreadyVerified: false, verificationToken: token }
+        } catch (error) {
+            if (error instanceof AuthError) throw error
+            throw new AuthError(
+                'Failed to resend verification email',
+                500,
+                AuthErrorCode.INTERNAL_ERROR
+            )
         }
     }
 }

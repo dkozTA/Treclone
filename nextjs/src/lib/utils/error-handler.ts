@@ -15,6 +15,7 @@ export class AuthError extends Error {
 export enum AuthErrorCode {
     INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
     EMAIL_ALREADY_REGISTERED = 'EMAIL_ALREADY_REGISTERED',
+    EMAIL_NOT_VERIFIED = 'EMAIL_NOT_VERIFIED',
     USER_NOT_FOUND = 'USER_NOT_FOUND',
     WORKSPACE_NOT_FOUND = 'WORKSPACE_NOT_FOUND',
     INVALID_TOKEN = 'INVALID_TOKEN',
@@ -66,6 +67,11 @@ export function handleAuthError(error: unknown): AuthError {
         if (message.includes('Email already registered')) {
             console.warn('[Auth Registration]', message)
             return new AuthError(message, 409, AuthErrorCode.EMAIL_ALREADY_REGISTERED)
+        }
+
+        if (message.includes('verify your email')) {
+            console.warn('[Auth Verification]', message)
+            return new AuthError(message, 403, AuthErrorCode.EMAIL_NOT_VERIFIED)
         }
 
         if (message.includes('User not found')) {

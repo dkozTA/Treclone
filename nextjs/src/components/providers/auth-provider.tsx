@@ -20,6 +20,7 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
           id: data.data.user.id.toString(),
           email: data.data.user.email,
           fullName: data.data.user.fullName,
+          emailVerifiedAt: data.data.user.emailVerifiedAt,
         });
         setIsAuthenticated(true);
       } else {
@@ -50,7 +51,7 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
 
         if (!response.ok) {
           const error = await response.json();
-          throw new Error(error.message || 'Login failed');
+          throw new Error(error.error || error.message || 'Login failed');
         }
 
         await fetchCurrentUser();
@@ -74,10 +75,11 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
 
         if (!response.ok) {
           const error = await response.json();
-          throw new Error(error.message || 'Registration failed');
+          throw new Error(error.error || error.message || 'Registration failed');
         }
 
-        await fetchCurrentUser();
+        setUser(null);
+        setIsAuthenticated(false);
       } finally {
         setIsLoading(false);
       }

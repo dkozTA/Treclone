@@ -9,6 +9,7 @@ export class SettingsRepository {
         id: true,
         email: true,
         fullName: true,
+        emailVerifiedAt: true,
         emailNotifications: true,
         darkMode: true,
       },
@@ -29,6 +30,7 @@ export class SettingsRepository {
         id: true,
         email: true,
         fullName: true,
+        emailVerifiedAt: true,
         emailNotifications: true,
         darkMode: true,
       },
@@ -39,7 +41,7 @@ export class SettingsRepository {
   async getUserPasswordHash(userId: bigint) {
     return prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, passwordHash: true },
+      select: { id: true, passwordHash: true, emailVerifiedAt: true },
     });
   }
 

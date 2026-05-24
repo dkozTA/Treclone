@@ -22,6 +22,19 @@ describe('Auth - Login Flow Integration', () => {
         if (![200, 201, 409].includes(response.status)) {
             throw new Error(`Registration failed with status ${response.status}`)
         }
+
+        const verificationToken = data?.data?.verificationToken
+        if (verificationToken) {
+            const verifyResponse = await fetch(`${baseUrl}/api/auth/verify-email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: verificationToken }),
+            })
+
+            if (!verifyResponse.ok) {
+                throw new Error(`Email verification failed with status ${verifyResponse.status}`)
+            }
+        }
     })
 
     afterAll(async () => {

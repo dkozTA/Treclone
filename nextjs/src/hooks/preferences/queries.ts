@@ -3,6 +3,10 @@
 import { useQuery } from '@tanstack/react-query';
 
 export interface Preferences {
+  id: string;
+  email: string;
+  fullName: string;
+  emailVerifiedAt: string | null;
   emailNotifications: boolean;
   darkMode: boolean;
 }
@@ -28,7 +32,7 @@ export function usePreferencesSettings() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Failed to fetch preferences');
+        throw new Error(error.error || error.message || 'Failed to fetch preferences');
       }
 
       const json: FetchPreferencesResponse = await response.json();

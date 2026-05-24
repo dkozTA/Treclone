@@ -26,6 +26,7 @@ interface UserProfile {
   readonly id: string;
   readonly email: string;
   readonly fullName: string;
+  readonly emailVerifiedAt?: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -107,6 +108,12 @@ export function EditProfileModal({
 
   const onPasswordSubmit = (data: PasswordFormData) => {
     setPasswordError(null);
+
+    if (!user.emailVerifiedAt) {
+      setPasswordError('Please verify your email before changing your password.');
+      return;
+    }
+
     changePassword(data, {
       onSuccess: () => {
         resetPassword();
@@ -212,6 +219,13 @@ export function EditProfileModal({
             onSubmit={handlePasswordFormSubmit(onPasswordSubmit)}
             className="space-y-gap-md"
           >
+            {!user.emailVerifiedAt && (
+              <Alert variant="warning">
+                <p className="text-sm">
+                  Please verify your email before changing your password.
+                </p>
+              </Alert>
+            )}
             {/* Current Password */}
             <div className="space-y-gap-sm">
               <Label htmlFor="currentPassword">Current Password</Label>
@@ -220,7 +234,7 @@ export function EditProfileModal({
                 type="password"
                 placeholder="••••••••"
                 {...registerPassword('currentPassword')}
-                disabled={isChangingPassword}
+                disabled={isChangingPassword || !user.emailVerifiedAt}
                 aria-invalid={!!passwordErrors.currentPassword}
               />
               {passwordErrors.currentPassword && (
@@ -238,7 +252,7 @@ export function EditProfileModal({
                 type="password"
                 placeholder="••••••••"
                 {...registerPassword('newPassword')}
-                disabled={isChangingPassword}
+                disabled={isChangingPassword || !user.emailVerifiedAt}
                 aria-invalid={!!passwordErrors.newPassword}
               />
               {passwordErrors.newPassword && (
@@ -256,7 +270,7 @@ export function EditProfileModal({
                 type="password"
                 placeholder="••••••••"
                 {...registerPassword('passwordConfirmation')}
-                disabled={isChangingPassword}
+                disabled={isChangingPassword || !user.emailVerifiedAt}
                 aria-invalid={!!passwordErrors.passwordConfirmation}
               />
               {passwordErrors.passwordConfirmation && (
@@ -286,7 +300,7 @@ export function EditProfileModal({
               <Button
                 type="submit"
                 variant="default"
-                disabled={isChangingPassword}
+                disabled={isChangingPassword || !user.emailVerifiedAt}
               >
                 {isChangingPassword ? 'Updating...' : 'Update Password'}
               </Button>

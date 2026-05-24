@@ -8,6 +8,7 @@ interface UserResponse {
     id: string;
     email: string;
     fullName: string;
+    emailVerifiedAt?: string | null;
     createdAt: string;
     updatedAt: string;
   };
@@ -41,7 +42,7 @@ export function useUpdateProfile() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Failed to update profile');
+        throw new Error(error.error || error.message || 'Failed to update profile');
       }
 
       return response.json();
@@ -67,7 +68,7 @@ export function useChangePassword() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Failed to change password');
+        throw new Error(error.error || error.message || 'Failed to change password');
       }
 
       return response.json();
@@ -92,7 +93,7 @@ export function useDeleteAccount() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Failed to delete account');
+        throw new Error(error.error || error.message || 'Failed to delete account');
       }
 
       return response.json();

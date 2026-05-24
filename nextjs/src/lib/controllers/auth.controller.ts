@@ -1,8 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { successResponse, errorResponse } from '@/lib/utils/api-utils'
 import { AuthService } from '@/lib/services/auth.service'
-import { sendPasswordResetEmail } from '@/lib/services/email.service'
+import {
+    sendEmailVerificationEmail,
+    sendPasswordResetEmail,
+} from '@/lib/services/email.service'
 import { handleAuthError } from '@/lib/utils/error-handler'
+
+function getRequestAppUrl(request: NextRequest) {
+    const forwardedHost = request.headers.get('x-forwarded-host')
+    const host = forwardedHost || request.headers.get('host')
+    const forwardedProto = request.headers.get('x-forwarded-proto')
+    const proto =
+        forwardedProto ||
+        request.nextUrl.protocol.replace(':', '') ||
+        (process.env.NODE_ENV === 'production' ? 'https' : 'http')
+
+    if (host) {
+        return `${proto}://${host}`.replace(/\/$/, '')
+    }
+
+    return request.nextUrl.origin.replace(/\/$/, '')
+}
 
 export class AuthController {
     private readonly service = new AuthService()
@@ -10,40 +29,37 @@ export class AuthController {
     async register(request: NextRequest) {
         try {
             const body = await request.json()
-            const user = await this.service.register(body)
-            const { accessToken, refreshToken } = this.service.generateTokens(user.id)
+            const { user, verificationToken } = await this.service.register(body)
 
-            await this.service.storeRefreshToken(user.id, refreshToken)
+            try {
+                await sendEmailVerificationEmail({
+                    to: user.email,
+                    verificationToken,
+                    appUrl: getRequestAppUrl(request),
+                })
+            } catch (error) {
+                console.error('Failed to send verification email:', error)
+            }
+
+            if (process.env.NODE_ENV === 'development') {
+                console.log('[DEV] Email verification token:', verificationToken)
+            }
 
             const response = NextResponse.json(
                 successResponse({
-                    message: 'User registered successfully',
+                    message: 'User registered successfully. Please verify your email.',
                     user: {
                         id: user.id.toString(),
                         email: user.email,
                         fullName: user.fullName,
+                        emailVerifiedAt: user.emailVerifiedAt,
                     },
+                    ...(process.env.NODE_ENV === 'development' && {
+                        verificationToken,
+                    }),
                 }, 201),
                 { status: 201 }
             )
-
-            response.cookies.set({
-                name: 'accessToken',
-                value: accessToken,
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
-                maxAge: 7 * 24 * 60 * 60,
-            })
-
-            response.cookies.set({
-                name: 'refreshToken',
-                value: refreshToken,
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
-                maxAge: 30 * 24 * 60 * 60,
-            })
 
             return response
         } catch (error) {
@@ -70,6 +86,7 @@ export class AuthController {
                         id: user.id.toString(),
                         email: user.email,
                         fullName: user.fullName,
+                        emailVerifiedAt: user.emailVerifiedAt,
                     },
                 })
             )
@@ -204,6 +221,7 @@ export class AuthController {
                     await sendPasswordResetEmail({
                         to: body.email,
                         resetToken: result.resetToken,
+                        appUrl: getRequestAppUrl(request),
                     })
                 } catch (error) {
                     console.error('Failed to send password reset email:', error)
@@ -249,7 +267,78 @@ export class AuthController {
                         id: user.id.toString(),
                         email: user.email,
                         fullName: user.fullName,
+                        emailVerifiedAt: user.emailVerifiedAt,
                     },
+                })
+            )
+
+            return response
+        } catch (error) {
+            const authError = handleAuthError(error)
+            return NextResponse.json(
+                errorResponse(authError.message, authError.statusCode),
+                { status: authError.statusCode }
+            )
+        }
+    }
+
+    async verifyEmail(request: NextRequest) {
+        try {
+            const body = await request.json()
+            const user = await this.service.verifyEmail(body)
+
+            const response = NextResponse.json(
+                successResponse({
+                    message: 'Email verified successfully',
+                    user: {
+                        id: user.id.toString(),
+                        email: user.email,
+                        fullName: user.fullName,
+                        emailVerifiedAt: user.emailVerifiedAt,
+                    },
+                })
+            )
+
+            return response
+        } catch (error) {
+            const authError = handleAuthError(error)
+            return NextResponse.json(
+                errorResponse(authError.message, authError.statusCode),
+                { status: authError.statusCode }
+            )
+        }
+    }
+
+    async resendVerification(request: NextRequest) {
+        try {
+            const body = await request.json()
+            const result = await this.service.resendVerification(body)
+
+            if (result.userFound && result.verificationToken) {
+                try {
+                    await sendEmailVerificationEmail({
+                        to: body.email,
+                        verificationToken: result.verificationToken,
+                        appUrl: getRequestAppUrl(request),
+                    })
+                } catch (error) {
+                    console.error('Failed to resend verification email:', error)
+                }
+            }
+
+            if (process.env.NODE_ENV === 'development' && result.verificationToken) {
+                console.log('[DEV] Email verification token:', result.verificationToken)
+            }
+
+            const response = NextResponse.json(
+                successResponse({
+                    message: result.alreadyVerified
+                        ? 'Email is already verified'
+                        : 'If the account exists, a verification email has been sent',
+                    ...(process.env.NODE_ENV === 'development' &&
+                        result.verificationToken && {
+                        verificationToken: result.verificationToken,
+                    }),
                 })
             )
 

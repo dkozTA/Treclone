@@ -8,6 +8,7 @@ export class ProfileRepository {
                 id: true,
                 email: true,
                 fullName: true,
+                emailVerifiedAt: true,
                 createdAt: true,
                 updatedAt: true,
             },
@@ -38,6 +39,7 @@ export class ProfileRepository {
                 id: true,
                 email: true,
                 fullName: true,
+                emailVerifiedAt: true,
                 updatedAt: true,
             },
         })

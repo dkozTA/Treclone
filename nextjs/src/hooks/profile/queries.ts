@@ -6,6 +6,7 @@ interface User {
     id: string
     email: string
     fullName: string
+    emailVerifiedAt?: string | null
     createdAt: string
     updatedAt: string
 }
@@ -33,7 +34,7 @@ export function useProfile() {
 
             if (!response.ok) {
                 const error = await response.json()
-                throw new Error(error.message || 'Failed to fetch profile')
+                throw new Error(error.error || error.message || 'Failed to fetch profile')
             }
 
             const json = await response.json()

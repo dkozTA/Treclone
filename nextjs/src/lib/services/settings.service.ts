@@ -90,6 +90,14 @@ export class SettingsService {
         );
       }
 
+      if (!user.emailVerifiedAt) {
+        throw new AuthError(
+          'Please verify your email before changing your password',
+          403,
+          AuthErrorCode.EMAIL_NOT_VERIFIED
+        );
+      }
+
       // Verify current password
       const isPasswordValid = await bcrypt.compare(
         validatedData.currentPassword,

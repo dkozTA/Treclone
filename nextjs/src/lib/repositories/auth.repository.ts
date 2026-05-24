@@ -7,9 +7,21 @@ export class AuthRepository {
         })
     }
 
-    async createUser(email: string, passwordHash: string, fullName: string) {
+    async createUser(
+        email: string,
+        passwordHash: string,
+        fullName: string,
+        emailVerificationToken: string,
+        emailVerificationExpires: Date
+    ) {
         return prisma.user.create({
-            data: { email, passwordHash, fullName },
+            data: {
+                email,
+                passwordHash,
+                fullName,
+                emailVerificationToken,
+                emailVerificationExpires,
+            },
         })
     }
 
@@ -43,6 +55,7 @@ export class AuthRepository {
                 id: true,
                 email: true,
                 fullName: true,
+                emailVerifiedAt: true,
                 createdAt: true,
                 ownedWorkspaces: {
                     select: { id: true, name: true },
@@ -57,6 +70,42 @@ export class AuthRepository {
             data: {
                 passwordResetToken: hashedToken,
                 passwordResetExpires: expiresAt,
+            },
+        })
+    }
+
+    async updateEmailVerificationToken(
+        email: string,
+        hashedToken: string,
+        expiresAt: Date
+    ) {
+        return prisma.user.update({
+            where: { email },
+            data: {
+                emailVerificationToken: hashedToken,
+                emailVerificationExpires: expiresAt,
+            },
+        })
+    }
+
+    async findUserByEmailVerificationToken(hashedToken: string) {
+        return prisma.user.findFirst({
+            where: {
+                emailVerificationToken: hashedToken,
+                emailVerificationExpires: {
+                    gt: new Date(),
+                },
+            },
+        })
+    }
+
+    async verifyEmail(userId: bigint) {
+        return prisma.user.update({
+            where: { id: userId },
+            data: {
+                emailVerifiedAt: new Date(),
+                emailVerificationToken: null,
+                emailVerificationExpires: null,
             },
         })
     }

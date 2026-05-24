@@ -28,6 +28,7 @@ async function createUsers(count: number): Promise<User[]> {
                 email: faker.internet.email(),
                 fullName: faker.person.fullName(),
                 passwordHash: await bcrypt.hash(faker.string.alphanumeric(10), 10),
+                emailVerifiedAt: new Date(),
             }
         })
         users.push(user)

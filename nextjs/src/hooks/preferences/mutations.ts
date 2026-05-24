@@ -3,7 +3,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Preferences } from './queries';
 
-type UpdatePreferencesInput = Partial<Preferences>;
+type UpdatePreferencesInput = Partial<
+  Pick<Preferences, 'emailNotifications' | 'darkMode'>
+>;
 
 interface UpdatePreferencesResponse {
   success: boolean;
@@ -28,7 +30,7 @@ export function useUpdatePreferences() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Failed to update preferences');
+        throw new Error(error.error || error.message || 'Failed to update preferences');
       }
 
       const json: UpdatePreferencesResponse = await response.json();
