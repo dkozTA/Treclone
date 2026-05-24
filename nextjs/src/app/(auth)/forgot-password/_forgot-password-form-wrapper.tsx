@@ -20,7 +20,7 @@ export function ForgotPasswordFormWrapper() {
       {/* Footer Link */}
       <div className="text-center pt-gap-md border-t border-hairline-ghost">
         <p className="text-body text-ink-muted">
-          Remember your password?
+          Remember your password?&nbsp;
           <Link
             href="/login"
             className="text-primary hover:text-primary-container font-semibold"
