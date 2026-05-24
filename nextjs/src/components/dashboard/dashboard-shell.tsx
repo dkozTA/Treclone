@@ -218,8 +218,8 @@ export function DashboardShell({
       {/* Main Content Area with Sidebar */}
       <div className="flex min-h-[calc(100vh-4rem)] gap-gap-lg bg-canvas p-gap-md md:p-gap-lg">
         {/* Sidebar - Desktop */}
-        <aside className="hidden w-72 flex-col rounded-xl border border-hairline-ghost bg-surface-1 md:flex">
-          <div className="border-b border-hairline-ghost p-gap-md">
+        <aside className="sticky top-[5.5rem] hidden h-[calc(100vh-7rem)] w-72 shrink-0 flex-col overflow-hidden rounded-xl border border-hairline-ghost bg-surface-1 md:flex">
+          <div className="shrink-0 border-b border-hairline-ghost p-gap-md">
             <details className="group">
               <summary className="flex cursor-pointer list-none items-center justify-between rounded-sm px-gap-md py-gap-sm hover:bg-canvas">
                 <div className="min-w-0">
@@ -259,7 +259,7 @@ export function DashboardShell({
             </details>
           </div>
 
-          <nav className="flex flex-1 flex-col gap-gap-xs p-gap-md">
+          <nav className="flex flex-1 flex-col gap-gap-xs overflow-y-auto p-gap-md">
             {desktopNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname.startsWith(item.href);
@@ -280,7 +280,7 @@ export function DashboardShell({
             })}
           </nav>
 
-          <div className="border-t border-hairline-ghost p-gap-md">
+          <div className="shrink-0 border-t border-hairline-ghost p-gap-md">
             <Button asChild variant="ghost" className="w-full justify-start">
               <Link href="/settings">
                 <Settings className="mr-gap-sm h-4 w-4" />
@@ -298,7 +298,7 @@ export function DashboardShell({
           </div>
         </aside>
         {/* Main Content */}
-        <main className="flex-1 rounded-xl bg-surface-2 p-gap-lg md:p-gap-xl">
+        <main className="min-w-0 flex-1 rounded-xl bg-surface-2 p-gap-lg md:p-gap-xl">
           {children}
         </main>
       </div>
